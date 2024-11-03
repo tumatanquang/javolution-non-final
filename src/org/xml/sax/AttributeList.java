@@ -1,7 +1,9 @@
 // SAX Attribute List Interface.
 // http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
+
 package org.xml.sax;
+
 /**
  * Interface for an element's attribute specifications.
  *
@@ -61,102 +63,120 @@ package org.xml.sax;
  * @version 2.0.1 (sax2r2)
  */
 public interface AttributeList {
-	////////////////////////////////////////////////////////////////////
-	// Iteration methods.
-	////////////////////////////////////////////////////////////////////
-	/**
-	 * Return the number of attributes in this list.
-	 *
-	 * <p>The SAX parser may provide attributes in any
-	 * arbitrary order, regardless of the order in which they were
-	 * declared or specified.  The number of attributes may be
-	 * zero.</p>
-	 *
-	 * @return The number of attributes in the list.
-	 */
-	public abstract int getLength();
-	/**
-	 * Return the name of an attribute in this list (by position).
-	 *
-	 * <p>The names must be unique: the SAX parser shall not include the
-	 * same attribute twice.  Attributes without values (those declared
-	 * #IMPLIED without a value specified in the start tag) will be
-	 * omitted from the list.</p>
-	 *
-	 * <p>If the attribute name has a namespace prefix, the prefix
-	 * will still be attached.</p>
-	 *
-	 * @param i The index of the attribute in the list (starting at 0).
-	 * @return The name of the indexed attribute, or null
-	 *         if the index is out of range.
-	 * @see #getLength
-	 */
-	public abstract String getName(int i);
-	/**
-	 * Return the type of an attribute in the list (by position).
-	 *
-	 * <p>The attribute type is one of the strings "CDATA", "ID",
-	 * "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
-	 * or "NOTATION" (always in upper case).</p>
-	 *
-	 * <p>If the parser has not read a declaration for the attribute,
-	 * or if the parser does not report attribute types, then it must
-	 * return the value "CDATA" as stated in the XML 1.0 Recommentation
-	 * (clause 3.3.3, "Attribute-Value Normalization").</p>
-	 *
-	 * <p>For an enumerated attribute that is not a notation, the
-	 * parser will report the type as "NMTOKEN".</p>
-	 *
-	 * @param i The index of the attribute in the list (starting at 0).
-	 * @return The attribute type as a string, or
-	 *         null if the index is out of range.
-	 */
-	public abstract String getType(int i);
-	/**
-	 * Return the value of an attribute in the list (by position).
-	 *
-	 * <p>If the attribute value is a list of tokens (IDREFS,
-	 * ENTITIES, or NMTOKENS), the tokens will be concatenated
-	 * into a single string separated by whitespace.</p>
-	 *
-	 * @param i The index of the attribute in the list (starting at 0).
-	 * @return The attribute value as a string, or
-	 *         null if the index is out of range.
-	 * @see #getLength
-	 */
-	public abstract String getValue(int i);
-	////////////////////////////////////////////////////////////////////
-	// Lookup methods.
-	////////////////////////////////////////////////////////////////////
-	/**
-	 * Return the type of an attribute in the list (by name).
-	 *
-	 * <p>The return value is the same as the return value for
-	 * getType(int).</p>
-	 *
-	 * <p>If the attribute name has a namespace prefix in the document,
-	 * the application must include the prefix here.</p>
-	 *
-	 * @param name The name of the attribute.
-	 * @return The attribute type as a string, or null if no
-	 *         such attribute exists.
-	 * @see #getType(int)
-	 */
-	public abstract String getType(String name);
-	/**
-	 * Return the value of an attribute in the list (by name).
-	 *
-	 * <p>The return value is the same as the return value for
-	 * getValue(int).</p>
-	 *
-	 * <p>If the attribute name has a namespace prefix in the document,
-	 * the application must include the prefix here.</p>
-	 *
-	 * @param name the name of the attribute to return
-	 * @return The attribute value as a string, or null if
-	 *         no such attribute exists.
-	 * @see #getValue(int)
-	 */
-	public abstract String getValue(String name);
+
+
+    ////////////////////////////////////////////////////////////////////
+    // Iteration methods.
+    ////////////////////////////////////////////////////////////////////
+    
+
+    /**
+     * Return the number of attributes in this list.
+     *
+     * <p>The SAX parser may provide attributes in any
+     * arbitrary order, regardless of the order in which they were
+     * declared or specified.  The number of attributes may be
+     * zero.</p>
+     *
+     * @return The number of attributes in the list.  
+     */
+    public abstract int getLength ();
+    
+    
+    /**
+     * Return the name of an attribute in this list (by position).
+     *
+     * <p>The names must be unique: the SAX parser shall not include the
+     * same attribute twice.  Attributes without values (those declared
+     * #IMPLIED without a value specified in the start tag) will be
+     * omitted from the list.</p>
+     *
+     * <p>If the attribute name has a namespace prefix, the prefix
+     * will still be attached.</p>
+     *
+     * @param i The index of the attribute in the list (starting at 0).
+     * @return The name of the indexed attribute, or null
+     *         if the index is out of range.
+     * @see #getLength 
+     */
+    public abstract String getName (int i);
+    
+    
+    /**
+     * Return the type of an attribute in the list (by position).
+     *
+     * <p>The attribute type is one of the strings "CDATA", "ID",
+     * "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
+     * or "NOTATION" (always in upper case).</p>
+     *
+     * <p>If the parser has not read a declaration for the attribute,
+     * or if the parser does not report attribute types, then it must
+     * return the value "CDATA" as stated in the XML 1.0 Recommentation
+     * (clause 3.3.3, "Attribute-Value Normalization").</p>
+     *
+     * <p>For an enumerated attribute that is not a notation, the
+     * parser will report the type as "NMTOKEN".</p>
+     *
+     * @param i The index of the attribute in the list (starting at 0).
+     * @return The attribute type as a string, or
+     *         null if the index is out of range.
+     */
+    public abstract String getType (int i);
+    
+    
+    /**
+     * Return the value of an attribute in the list (by position).
+     *
+     * <p>If the attribute value is a list of tokens (IDREFS,
+     * ENTITIES, or NMTOKENS), the tokens will be concatenated
+     * into a single string separated by whitespace.</p>
+     *
+     * @param i The index of the attribute in the list (starting at 0).
+     * @return The attribute value as a string, or
+     *         null if the index is out of range.
+     * @see #getLength
+     */
+    public abstract String getValue (int i);
+
+
+    ////////////////////////////////////////////////////////////////////
+    // Lookup methods.
+    ////////////////////////////////////////////////////////////////////
+    
+    
+    /**
+     * Return the type of an attribute in the list (by name).
+     *
+     * <p>The return value is the same as the return value for
+     * getType(int).</p>
+     *
+     * <p>If the attribute name has a namespace prefix in the document,
+     * the application must include the prefix here.</p>
+     *
+     * @param name The name of the attribute.
+     * @return The attribute type as a string, or null if no
+     *         such attribute exists.
+     * @see #getType(int)
+     */
+    public abstract String getType (String name);
+    
+    
+    /**
+     * Return the value of an attribute in the list (by name).
+     *
+     * <p>The return value is the same as the return value for
+     * getValue(int).</p>
+     *
+     * <p>If the attribute name has a namespace prefix in the document,
+     * the application must include the prefix here.</p>
+     *
+     * @param name the name of the attribute to return
+     * @return The attribute value as a string, or null if
+     *         no such attribute exists.
+     * @see #getValue(int)
+     */
+    public abstract String getValue (String name);
+    
 }
+
 // end of AttributeList.java

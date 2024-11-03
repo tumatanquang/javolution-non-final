@@ -2,30 +2,31 @@
  * Javolution - Java(TM) Solution for Real-Time and Embedded Systems
  * Copyright (C) 2007 - Javolution (http://javolution.org/)
  * All rights reserved.
- *
+ * 
  * Permission to use, copy, modify, and distribute this software is
  * freely granted, provided that this notice is preserved.
  */
 package javolution.testing;
+
 /**
- * <p> This class represents a test case which can be used for validation,
+ * <p> This class represents a test case which can be used for validation, 
  *     performance and regression tests.</p>
- *
+ *     
  * <p> The structure of a test case is as follow:[code]
  *     class MyTestCase extends TestCase {
  *
  *         // Prepares data/state in which to run the test.
  *         public void setUp() { ... } // Optional
- *
+ *         
  *         // Executes the test possibly exercising the function tested multiple times.
  *         public void execute() throws Throwable { ... } // Mandatory.
- *
+ *         
  *         // Returns the number of times the function tested has been exercised (default 1).
  *         public int count() { ... } // Optional
- *
+ *     
  *         // Validates the test results and possibly check for limit cases or exceptions.
  *         public void validate() throws Throwable { ... } // Mandatory.
- *
+ *         
  *         // Cleanups after execution (e.g. to release resources).
  *         public void tearDown() { ... } // Optional
 
@@ -99,84 +100,95 @@ package javolution.testing;
  * @see     TestContext
  */
 public abstract class TestCase {
-	/**
-	 * Indicates if this test case has to be ignored.
-	 */
-	boolean _isIgnored;
-	/**
-	 * Returns the name of this test case. The default implementation
-	 * returns the class name.
-	 *
-	 * @return the test case name.
-	 */
-	public String getName() {
-		return this.getClass().getName();
-	}
-	/**
-	 * Default constructor.
-	 */
-	protected TestCase() {}
-	/**
-	 * Selects whether or not this test case should be ignored. If the
-	 * test case is ignored it is not executed, but the test context
-	 * will usually indicate that the test is being ignored.
-	 *
-	 * @param isIgnored <code>true</code> if test case is ignored;
-	 *        <code>false</code> otherwise.
-	 * @return this test case.
-	 */
-	public TestCase ignore(boolean isIgnored) {
-		_isIgnored = isIgnored;
-		return this;
-	}
-	/**
-	 * Indicates whether or not this test case should be ignored.
-	 *
-	 * @return <code>true</code> if this test case is ignored;
-	 *        <code>false</code> otherwise.
-	 */
-	public boolean isIgnored() {
-		return _isIgnored;
-	}
-	/**
-	 * Prepares the test case execution (the default implementation does
-	 * nothing).
-	 */
-	public void setUp() {
-		// Does nothing.
-	}
-	/**
-	 * Executes this test case (possibly multiple times in which case
-	 * the {@link #count()} method should be overriden).
-	 */
-	public abstract void execute() throws Exception;
-	/**
-	 * The number of times the test case is exercised (default <code>1</code>).
-	 *
-	 * @return the number of test case occurences in {@link #execute}.
-	 */
-	public int count() {
-		return 1;
-	}
-	/**
-	 * Validates the test results and possibly checks for limit cases
-	 * or exceptions.
-	 */
-	public abstract void validate() throws Exception;
-	/**
-	 * Cleanup once test is complete (the default implementation does
-	 * nothing).
-	 */
-	public void tearDown() {
-		// Does nothing.
-	}
-	/**
-	 * Returns the <code>String</code> representation of this test case.
-	 *
-	 * @return <code>this.getName()</code>
-	 */
-	@Override
-	public String toString() {
-		return getName();
-	}
+    /**
+     * Indicates if this test case has to be ignored.
+     */
+   boolean _isIgnored;
+
+    /**
+     * Returns the name of this test case. The default implementation
+     * returns the class name.
+     *
+     * @return the test case name.
+     */
+    public String getName() {
+        return this.getClass().getName();
+    }
+
+    /**
+     * Default constructor.
+     */
+    protected TestCase() {
+    }
+
+    /**
+     * Selects whether or not this test case should be ignored. If the
+     * test case is ignored it is not executed, but the test context
+     * will usually indicate that the test is being ignored.
+     *
+     * @param isIgnored <code>true</code> if test case is ignored;
+     *        <code>false</code> otherwise.
+     * @return this test case.
+     */
+    public TestCase ignore(boolean isIgnored) {
+        _isIgnored = isIgnored;
+        return this;
+    }
+
+    /**
+     * Indicates whether or not this test case should be ignored.
+     *
+     * @return <code>true</code> if this test case is ignored;
+     *        <code>false</code> otherwise.
+     */
+    public boolean isIgnored() {
+        return _isIgnored;
+    }
+
+    /**
+     * Prepares the test case execution (the default implementation does 
+     * nothing).
+     */
+    public void setUp() {
+        // Does nothing.
+    }
+
+    /**
+     * Executes this test case (possibly multiple times in which case 
+     * the {@link #count()} method should be overriden).
+     */
+    public abstract void execute() throws Exception;
+
+    /**
+     * The number of times the test case is exercised (default <code>1</code>).
+     * 
+     * @return the number of test case occurences in {@link #execute}.
+     */
+    public int count() {
+        return 1;
+    }
+
+    /**
+     * Validates the test results and possibly checks for limit cases
+     * or exceptions.
+     */
+    public abstract void validate() throws Exception;
+
+    /**
+     * Cleanup once test is complete (the default implementation does 
+     * nothing).
+     */
+    public void tearDown() {
+        // Does nothing.
+    }
+
+    /**
+     * Returns the <code>String</code> representation of this test case.
+     * 
+     * @return <code>this.getName()</code>
+     */
+    public String toString() {
+        return getName();
+    }
+
 }

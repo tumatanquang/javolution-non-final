@@ -31,7 +31,7 @@ jobs:
         chmod +x jdk-6u45-linux-x64.bin
         ./jdk-6u45-linux-x64.bin
 
-    - name: Build Javolution 5.6.x on JDK 6
+    - name: Build with Ant using JDK 8 and javac from JDK 6
       run: ant -Dexecutable=$(pwd)/jdk1.6.0_45/bin/javac compile-jdk6
 
     - name: Create Release
@@ -40,17 +40,17 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v5.6.1_6
-        release_name: v5.6.1 (JDK 6)
+        tag_name: v5.6.0_6
+        release_name: v5.6.0 (JDK 6)
         draft: false
         prerelease: false
 
-    - name: Upload to Release
+    - name: Upload javolution.jar to Release
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./javolution-5.6.1.jar
-        asset_name: javolution-5.6.1_6.jar
+        asset_path: ./javolution.jar
+        asset_name: javolution-5.6.0_6.jar
         asset_content_type: application/java-archive

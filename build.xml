@@ -6,7 +6,7 @@
 	<target name="_init">
 		<tstamp/>
 		<property name="library" value="javolution"/>
-		<property name="version" value="5.6.1"/>
+		<property name="version" value="5.6.0"/>
 		<property name="release" value="5"/>
 		<property name="src" value="src"/>
 		<property name="bin" value="bin"/>
@@ -23,7 +23,7 @@
 		<delete dir="${bin}"/>
 		<delete dir="${api}"/>
 		<delete dir="${tmp}"/>
-		<delete file="${library}-${version}.jar"/>
+		<delete file="${library}.jar"/>
 	</target>
 
 	<target name="_init_1.5">
@@ -110,7 +110,7 @@
 	</target>
 
 	<target name="jar" depends="_init">
-		<jar jarfile="${library}-${version}.jar" basedir="${bin}" update="false">
+		<jar jarfile="${library}.jar" basedir="${bin}" update="false">
 			<manifest>
 				<attribute name="Main-Class" value="javolution.Javolution"/>
 				<attribute name="Specification-Title" value="Javolution"/>

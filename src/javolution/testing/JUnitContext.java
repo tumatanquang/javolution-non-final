@@ -7,9 +7,12 @@
  * freely granted, provided that this notice is preserved.
  */
 package javolution.testing;
+
 import javolution.context.Context;
-import javolution.lang.Reflection;
+import java.lang.CharSequence;
 import javolution.text.Text;
+import javolution.lang.Reflection;
+
 /**
  * <p> This class represents a test context forwarding events to the
  *     JUnit framework (e.g. asserts). Its purpose is to facilitate
@@ -46,72 +49,71 @@ import javolution.text.Text;
  * @version 5.3, March 21, 2009
  */
 public class JUnitContext extends TestContext {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 8006127503429913555L;
-	/**
-	 * Enters a JUnit test context. This context raises a
-	 * <code>junit.framework.AssertionFailedError</code> if an assert
-	 * fails.
-	 */
-	public static void enter() {
-		Context.enter(JUnitContext.class);
-	}
-	/**
-	 * Exits the current JUnit test context.
-	 *
-	 * @throws ClassCastException if the current context is not a JUnit context.
-	 */
-	public static void exit() {
-		Context.exit(JUnitContext.class);
-	}
-	@Override
-	protected void doRun(TestSuite testSuite) throws Exception {
-		logMessage("test", Text.valueOf("---------------------------------------------------"));
-		logMessage("test", Text.valueOf("Executes Test Suite: ").plus(testSuite.getName()));
-		logMessage("test", Text.valueOf(""));
-		super.doRun(testSuite);
-	}
-	@Override
-	protected void doRun(TestCase testCase) throws Exception {
-		if(testCase.isIgnored()) {
-			logWarning(Text.valueOf("Ignore ").plus(testCase.getName()));
-			return;
-		}
-		logMessage("test", Text.valueOf(testCase.getName()));
-		super.doRun(testCase);
-	}
-	@Override
-	protected boolean doAssert(boolean value, CharSequence message) {
-		if(!value) {
-			super.doAssert(value, message); // Logs error.
-			if(JUNIT_ERROR_CONSTRUCTOR != null) {
-				RuntimeException junitError = (RuntimeException) JUNIT_ERROR_CONSTRUCTOR
-						.newInstance(message.toString());
-				throw junitError;
-			}
-			throw new AssertionException(message.toString());
-		}
-		return true;
-	}
-	private static Reflection.Constructor JUNIT_ERROR_CONSTRUCTOR = Reflection.getInstance()
-			.getConstructor("junit.framework.AssertionFailedError(String)");
-	@Override
-	protected void logMessage(String category, CharSequence message) {
-		if(category.equals("error")) {
-			System.err.print("[");
-			System.err.print(category);
-			System.err.print("] ");
-			System.err.println(message);
-			System.err.flush();
-		}
-		else {
-			System.out.print("[");
-			System.out.print(category);
-			System.out.print("] ");
-			System.out.println(message);
-			System.out.flush();
-		}
-	}
+
+    /**
+     * Enters a JUnit test context. This context raises a
+     * <code>junit.framework.AssertionFailedError</code> if an assert
+     * fails.
+     */
+    public static void enter() {
+        Context.enter(JUnitContext.class);
+    }
+
+    /**
+     * Exits the current JUnit test context.
+     *
+     * @throws ClassCastException if the current context is not a JUnit context.
+     */
+    public static void exit() {
+         Context.exit(JUnitContext.class);
+    }
+
+    protected void doRun(TestSuite testSuite) throws Exception {
+       logMessage("test", Text.valueOf("---------------------------------------------------"));
+        logMessage("test", Text.valueOf("Executes Test Suite: ").plus(testSuite.getName()));
+        logMessage("test", Text.valueOf(""));
+        super.doRun(testSuite);
+    }
+
+    protected void doRun(TestCase testCase) throws Exception {
+        if (testCase.isIgnored()) {
+            logWarning(Text.valueOf("Ignore ").plus(testCase.getName()));
+            return;
+        }
+        logMessage("test", Text.valueOf(testCase.getName()));
+        super.doRun(testCase);
+    }
+
+    protected boolean doAssert(boolean value, CharSequence message) {
+        if (!value) {
+            super.doAssert(value, message); // Logs error.
+            if (JUNIT_ERROR_CONSTRUCTOR != null) {
+                RuntimeException junitError
+                        = (RuntimeException) JUNIT_ERROR_CONSTRUCTOR.newInstance(message.toString());
+                throw junitError;
+            } else {
+                throw new AssertionException(message.toString());
+            }
+        }
+        return true;
+    }
+    private static Reflection.Constructor JUNIT_ERROR_CONSTRUCTOR 
+            = Reflection.getInstance().getConstructor("junit.framework.AssertionFailedError(String)");
+
+
+    protected void logMessage(String category, CharSequence message) {
+        if (category.equals("error")) {
+            System.err.print("[");
+            System.err.print(category);
+            System.err.print("] ");
+            System.err.println(message);
+            System.err.flush();
+        } else {
+            System.out.print("[");
+            System.out.print(category);
+            System.out.print("] ");
+            System.out.println(message);
+            System.out.flush();
+        }
+    }
 }

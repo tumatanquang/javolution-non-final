@@ -2,7 +2,12 @@
 // http://www.saxproject.org
 // Written by David Megginson
 // NO WARRANTY!  This class is in the Public Domain.
+
 package org.xml.sax;
+
+import org.xml.sax.SAXException;
+
+
 /**
  * Exception class for an unrecognized identifier.
  *
@@ -22,24 +27,28 @@ package org.xml.sax;
  * @version 2.0.1 (sax2r2)
  * @see org.xml.sax.SAXNotSupportedException
  */
-public class SAXNotRecognizedException extends SAXException {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1398555601346822626L;
-	/**
-	 * Default constructor.
-	 */
-	public SAXNotRecognizedException() {
-		super();
-	}
-	/**
-	 * Construct a new exception with the given message.
-	 *
-	 * @param message The text message of the exception.
-	 */
-	public SAXNotRecognizedException(String message) {
-		super(message);
-	}
+public class SAXNotRecognizedException extends SAXException
+{
+
+    /**
+     * Default constructor.
+     */
+    public SAXNotRecognizedException ()
+    {
+	super();
+    }
+
+
+    /**
+     * Construct a new exception with the given message.
+     *
+     * @param message The text message of the exception.
+     */
+    public SAXNotRecognizedException (String message)
+    {
+	super(message);
+    }
+
 }
+
 // end of SAXNotRecognizedException.java
