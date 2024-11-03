@@ -1,0 +1,56 @@
+name: Build Javolution 5.6.x on JDK 5
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+
+    - name: Download JDK 5
+      run: |
+        wget https://ax0iq9rrdxh1.objectstorage.ap-singapore-1.oci.customer-oci.com/p/bn4LYSr4ddMFffosEcefGCH36u8qt8_w7SktP6n4Nm-RSXrFZtCaNSxTPdRk6zy2/n/ax0iq9rrdxh1/b/AP-SINGAPORE-1/o/jdk-1_5_0_22-linux-amd64-direct.bin
+        chmod +x jdk-1_5_0_22-linux-amd64-direct.bin
+        ./jdk-1_5_0_22-linux-amd64-direct.bin
+
+    - name: Build Javolution 5.6.x on JDK 5
+      run: ant -Dexecutable=$(pwd)/jdk1.5.0_22/bin/javac compile-jdk5
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v5.6.1_5
+        release_name: v5.6.1 (JDK 5)
+        draft: false
+        prerelease: false
+
+    - name: Upload to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./javolution-5.6.1.jar
+        asset_name: javolution-5.6.1_5.jar
+        asset_content_type: application/java-archive

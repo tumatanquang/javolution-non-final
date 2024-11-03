@@ -1,0 +1,129 @@
+<project name="Javolution" default="no-args" basedir=".">
+	<description>
+		Javolution - Java(TM) Solution for Real-Time and Embedded Systems.
+	</description>
+
+	<target name="_init">
+		<tstamp/>
+		<property name="library" value="javolution"/>
+		<property name="version" value="5.6.1"/>
+		<property name="release" value="5"/>
+		<property name="src" value="src"/>
+		<property name="bin" value="bin"/>
+		<property name="tmp" value="tmp"/>
+		<property name="api" value="api"/>
+		<property name="debug" value="false"/>
+		<property name="optimize" value="true"/>
+		<property name="includeAntRuntime" value="false"/>
+		<property name="encoding" value="UTF-8"/>
+		<mkdir dir="${tmp}"/>
+	</target>
+
+	<target name="clean" depends="_init">
+		<delete dir="${bin}"/>
+		<delete dir="${api}"/>
+		<delete dir="${tmp}"/>
+		<delete file="${library}-${version}.jar"/>
+	</target>
+
+	<target name="_init_1.5">
+		<property name="vm" value="J2SE 1.5+"/>
+		<property name="fork" value="true"/>
+		<property name="source" value="1.5"/>
+		<property name="target" value="1.5"/>
+		<property name="compiler" value="javac1.5"/>
+		<filter token="VERSION" value="${version}.${release} (${vm}) ${TODAY}"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<filter token="JVM-1.5+" value="*/"/>
+		<copy todir="${tmp}" filtering="true">
+			<fileset dir="${src}"/>
+		</copy>
+	</target>
+
+	<target name="_init_1.6">
+		<property name="vm" value="J2SE 1.6+"/>
+		<property name="fork" value="true"/>
+		<property name="source" value="1.6"/>
+		<property name="target" value="1.6"/>
+		<property name="compiler" value="javac1.6"/>
+		<filter token="VERSION" value="${version}.${release} (${vm}) ${TODAY}"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<filter token="JVM-1.5+" value="*/"/>
+		<filter token="JVM-1.6+" value="*/" />
+		<copy todir="${tmp}" filtering="true">
+			<fileset dir="${src}"/>
+		</copy>
+	</target>
+
+	<target name="_compile" depends="_init">
+		<mkdir dir="${bin}"/>
+		<!-- Compile everything in tmp directory -->
+		<javac srcdir="${tmp}"
+				destdir="${bin}"
+				classpath="${bin}"
+				encoding="${encoding}"
+				debug="${debug}"
+				optimize="${optimize}"
+				includeAntRuntime="${includeAntRuntime}"
+				fork="${fork}"
+				executable="${executable}"
+				source="${source}"
+				target="${target}"
+				compiler="${compiler}"/>
+		<!-- Copies resources if any -->
+		<copy todir="${bin}">
+			<fileset dir="${src}">
+				<include name="**/res-files/*"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="doc" depends="_init">
+		<mkdir dir="${api}"/>
+		<!-- Overwrite doc-files with original documents -->
+		<copy todir="${tmp}" overwrite="true">
+			<fileset dir="${src}">
+				<include name="**/doc-files/*"/>
+			</fileset>
+		</copy>
+		<javadoc sourcepath="${tmp}" destdir="${api}" windowtitle="Javolution v${version} API" overview="src/overview.html" author="true" version="true" classpath="${bin}" charset="${encoding}" encoding="${encoding}" docencoding="${encoding}" stylesheetfile="css/javadoc.css" splitindex="true">
+			<header>
+				<![CDATA[<A HREF="http://javolution.org">
+				<SPAN CLASS="style0">J</SPAN>
+				<SPAN CLASS="style1">avolution v${version} (${vm})</SPAN>
+				</A>]]>
+			</header>
+			<bottom>
+				<![CDATA[<i>Copyright &#169; 2005 - 2007 Javolution.</i>]]>
+			</bottom>
+			<packageset dir="${tmp}" defaultexcludes="yes">
+				<include name="javolution/**/*"/>
+				<exclude name="**/doc-files/**"/>
+				<exclude name="**/res-files/**"/>
+			</packageset>
+		</javadoc>
+		<java classname="Colapi" classpath="colapi.jar">
+			<arg value="${basedir}/${api}"/>
+		</java>
+	</target>
+
+	<target name="jar" depends="_init">
+		<jar jarfile="${library}-${version}.jar" basedir="${bin}" update="false">
+			<manifest>
+				<attribute name="Main-Class" value="javolution.Javolution"/>
+				<attribute name="Specification-Title" value="Javolution"/>
+				<attribute name="Specification-Version" value="${version} (${vm})"/>
+				<attribute name="Specification-Vendor" value="Javolution"/>
+				<attribute name="Implementation-Title" value="Javolution"/>
+				<attribute name="Implementation-URL" value="http://javolution.org"/>
+				<attribute name="Implementation-Vendor" value="Javolution"/>
+				<attribute name="Implementation-Version" value="${version}.${release} ${TODAY}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="compile-jdk5" depends="clean, _init_1.5, _compile, jar, doc"/>
+	<target name="compile-jdk6" depends="clean, _init_1.6, _compile, jar, doc"/>
+</project>
