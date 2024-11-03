@@ -2,7 +2,11 @@
 // http://www.saxproject.org
 // Written by David Megginson
 // NO WARRANTY!  This class is in the Public Domain.
+
 package org.xml.sax;
+
+import org.xml.sax.SAXException;
+
 /**
  * Exception class for an unsupported operation.
  *
@@ -21,26 +25,30 @@ package org.xml.sax;
  * @since SAX 2.0
  * @author David Megginson
  * @version 2.0.1 (sax2r2)
- * @see org.xml.sax.SAXNotRecognizedException
+ * @see org.xml.sax.SAXNotRecognizedException 
  */
-public class SAXNotSupportedException extends SAXException {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -7373565723188945450L;
-	/**
-	 * Construct a new exception with no message.
-	 */
-	public SAXNotSupportedException() {
-		super();
-	}
-	/**
-	 * Construct a new exception with the given message.
-	 *
-	 * @param message The text message of the exception.
-	 */
-	public SAXNotSupportedException(String message) {
-		super(message);
-	}
+public class SAXNotSupportedException extends SAXException
+{
+
+    /**
+     * Construct a new exception with no message.
+     */
+    public SAXNotSupportedException ()
+    {
+	super();
+    }
+
+
+    /**
+     * Construct a new exception with the given message.
+     *
+     * @param message The text message of the exception.
+     */
+    public SAXNotSupportedException (String message)
+    {
+	super(message);
+    }
+
 }
+
 // end of SAXNotSupportedException.java

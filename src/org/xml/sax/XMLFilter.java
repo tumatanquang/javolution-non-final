@@ -2,7 +2,12 @@
 // http://www.saxproject.org
 // Written by David Megginson
 // NO WARRANTY!  This class is in the Public Domain.
+
 package org.xml.sax;
+
+import org.xml.sax.XMLReader;
+
+
 /**
  * Interface for an XML filter.
  *
@@ -28,27 +33,33 @@ package org.xml.sax;
  * @author David Megginson
  * @version 2.0.1 (sax2r2)
  */
-public interface XMLFilter extends XMLReader {
-	/**
-	 * Set the parent reader.
-	 *
-	 * <p>This method allows the application to link the filter to
-	 * a parent reader (which may be another filter).  The argument
-	 * may not be null.</p>
-	 *
-	 * @param parent The parent reader.
-	 */
-	public abstract void setParent(XMLReader parent);
-	/**
-	 * Get the parent reader.
-	 *
-	 * <p>This method allows the application to query the parent
-	 * reader (which may be another filter).  It is generally a
-	 * bad idea to perform any operations on the parent reader
-	 * directly: they should all pass through this filter.</p>
-	 *
-	 * @return The parent filter, or null if none has been set.
-	 */
-	public abstract XMLReader getParent();
+public interface XMLFilter extends XMLReader
+{
+
+    /**
+     * Set the parent reader.
+     *
+     * <p>This method allows the application to link the filter to
+     * a parent reader (which may be another filter).  The argument
+     * may not be null.</p>
+     *
+     * @param parent The parent reader.
+     */
+    public abstract void setParent (XMLReader parent);
+
+
+    /**
+     * Get the parent reader.
+     *
+     * <p>This method allows the application to query the parent
+     * reader (which may be another filter).  It is generally a
+     * bad idea to perform any operations on the parent reader
+     * directly: they should all pass through this filter.</p>
+     *
+     * @return The parent filter, or null if none has been set.
+     */
+    public abstract XMLReader getParent ();
+
 }
+
 // end of XMLFilter.java
