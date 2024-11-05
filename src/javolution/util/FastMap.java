@@ -1037,9 +1037,6 @@ public class FastMap<K, V> implements Map<K, V>, Reusable, XMLSerializable, Real
 		return _values;
 	}
 	private final class Values extends FastCollection {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8905800965110547381L;
 		@Override
 		public int size() {
@@ -1147,9 +1144,6 @@ public class FastMap<K, V> implements Map<K, V>, Reusable, XMLSerializable, Real
 		return _entrySet;
 	}
 	private final class EntrySet extends FastCollection implements Set {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 3722841650950653372L;
 		@Override
 		public int size() {
@@ -1192,9 +1186,6 @@ public class FastMap<K, V> implements Map<K, V>, Reusable, XMLSerializable, Real
 			return _entryComparator;
 		}
 		private final FastComparator _entryComparator = new FastComparator() {
-			/**
-			 *
-			 */
 			private static final long serialVersionUID = -2660904327869512536L;
 			@Override
 			public boolean areEqual(Object o1, Object o2) {
@@ -1293,9 +1284,6 @@ public class FastMap<K, V> implements Map<K, V>, Reusable, XMLSerializable, Real
 		return _keySet;
 	}
 	private final class KeySet extends FastCollection implements Set {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -522975597792555676L;
 		@Override
 		public int size() {
@@ -1573,9 +1561,6 @@ public class FastMap<K, V> implements Map<K, V>, Reusable, XMLSerializable, Real
 	 * This class represents an read-only view over a {@link FastMap}.
 	 */
 	private final class Unmodifiable implements Map, Serializable {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -9220593830735606849L;
 		@Override
 		public boolean equals(Object obj) {

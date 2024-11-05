@@ -34,9 +34,6 @@ import javolution.util.FastMap;
  * @see javolution.util.LocalMap
  */
 public class LocalContext extends Context {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -7123453332525067186L;
 	/**
 	 * Holds any reference associated to this context (reference to

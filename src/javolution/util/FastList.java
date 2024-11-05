@@ -565,8 +565,8 @@ public class FastList<E> extends FastCollection<E> implements List<E>, Reusable 
 	}
 	// Overrides  to return a list (JDK1.5+).
 	@Override
-	public List<E> shared() {
-		return (List<E>) super.shared();
+	public FastList<E> shared() {
+		return new SynchronizedFastList(this);
 	}
 	/**
 	 * Returns a new node for this list; this method can be overriden by
@@ -624,6 +624,104 @@ public class FastList<E> extends FastCollection<E> implements List<E>, Reusable 
 		clear();
 		this.setValueComparator(FastComparator.DEFAULT);
 	}
+	private static final class SynchronizedFastList<E> extends FastList<E> implements Collection<E>, Serializable {
+		private static final long serialVersionUID = 0x562;
+		private final FastList<E> list; // Backing FastList
+		private final Object mutex; // Object on which to synchronize
+		private SynchronizedFastList(FastList<E> target) {
+			if(target == null)
+				throw new NullPointerException();
+			list = target;
+			mutex = this;
+		}
+		@Override
+		public int size() {
+			synchronized(mutex) {
+				return list.size();
+			}
+		}
+		@Override
+		public boolean isEmpty() {
+			synchronized(mutex) {
+				return list.isEmpty();
+			}
+		}
+		@Override
+		public boolean contains(Object o) {
+			synchronized(mutex) {
+				return list.contains(o);
+			}
+		}
+		@Override
+		public Object[] toArray() {
+			synchronized(mutex) {
+				return list.toArray();
+			}
+		}
+		@Override
+		public <T> T[] toArray(T[] a) {
+			synchronized(mutex) {
+				return list.toArray(a);
+			}
+		}
+		@Override
+		public Iterator<E> iterator() {
+			return list.iterator(); // Must be manually synched by user!
+		}
+		@Override
+		public boolean add(E e) {
+			synchronized(mutex) {
+				return list.add(e);
+			}
+		}
+		@Override
+		public boolean remove(Object o) {
+			synchronized(mutex) {
+				return list.remove(o);
+			}
+		}
+		@Override
+		public boolean containsAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.containsAll(coll);
+			}
+		}
+		@Override
+		public boolean addAll(Collection<? extends E> coll) {
+			synchronized(mutex) {
+				return list.addAll(coll);
+			}
+		}
+		@Override
+		public boolean removeAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.removeAll(coll);
+			}
+		}
+		@Override
+		public boolean retainAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.retainAll(coll);
+			}
+		}
+		@Override
+		public void clear() {
+			synchronized(mutex) {
+				list.clear();
+			}
+		}
+		@Override
+		public String toString() {
+			synchronized(mutex) {
+				return list.toString();
+			}
+		}
+		private void writeObject(ObjectOutputStream s) throws IOException {
+			synchronized(mutex) {
+				s.defaultWriteObject();
+			}
+		}
+	}
 	/**
 	 * This class represents a {@link FastList} node; it allows for direct
 	 * iteration over the list {@link #getValue values}.
@@ -639,9 +737,6 @@ public class FastList<E> extends FastCollection<E> implements List<E>, Reusable 
 	 *    }[/code]
 	 */
 	public static class Node<E> implements Record, Serializable {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 997407224295103168L;
 		/**
 		 * Holds the next node.
@@ -680,9 +775,6 @@ public class FastList<E> extends FastCollection<E> implements List<E>, Reusable 
 	 * This inner class implements a sub-list.
 	 */
 	private static final class SubList extends FastCollection implements List, Serializable {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -1224847103491317222L;
 		private static final ObjectFactory FACTORY = new ObjectFactory() {
 			@Override

@@ -6,7 +6,7 @@
 	<target name="_init">
 		<tstamp/>
 		<property name="library" value="javolution"/>
-		<property name="version" value="5.6.1"/>
+		<property name="version" value="5.6.2"/>
 		<property name="release" value="5"/>
 		<property name="src" value="src"/>
 		<property name="bin" value="bin"/>

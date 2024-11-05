@@ -10,6 +10,7 @@ package javolution.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +52,7 @@ import javolution.lang.Reusable;
  * @version 5.4.5, August 20, 2007
  */
 public class FastTable<E> extends FastCollection<E> implements List<E>, Reusable, RandomAccess {
-	private static final long serialVersionUID = 0x561;
+	private static final long serialVersionUID = 0x562;
 	/**
 	 * Holds the factory for this fast table.
 	 */
@@ -597,8 +598,8 @@ public class FastTable<E> extends FastCollection<E> implements List<E>, Reusable
 	}
 	// Overrides  to return a list (JDK1.5+).
 	@Override
-	public List<E> shared() {
-		return (List<E>) super.shared();
+	public FastTable<E> shared() {
+		return new SynchronizedFastTable(this);
 	}
 	// Overrides (optimization).
 	@Override
@@ -663,13 +664,108 @@ public class FastTable<E> extends FastCollection<E> implements List<E>, Reusable
 			}
 		});
 	}
+	private static final class SynchronizedFastTable<E> extends FastTable<E> implements Collection<E>, Serializable {
+		private static final long serialVersionUID = 0x562;
+		private final FastTable<E> list; // Backing FastTable
+		private final Object mutex; // Object on which to synchronize
+		private SynchronizedFastTable(FastTable<E> target) {
+			if(target == null)
+				throw new NullPointerException();
+			list = target;
+			mutex = this;
+		}
+		@Override
+		public int size() {
+			synchronized(mutex) {
+				return list.size();
+			}
+		}
+		@Override
+		public boolean isEmpty() {
+			synchronized(mutex) {
+				return list.isEmpty();
+			}
+		}
+		@Override
+		public boolean contains(Object o) {
+			synchronized(mutex) {
+				return list.contains(o);
+			}
+		}
+		@Override
+		public Object[] toArray() {
+			synchronized(mutex) {
+				return list.toArray();
+			}
+		}
+		@Override
+		public <T> T[] toArray(T[] a) {
+			synchronized(mutex) {
+				return list.toArray(a);
+			}
+		}
+		@Override
+		public Iterator<E> iterator() {
+			return list.iterator(); // Must be manually synched by user!
+		}
+		@Override
+		public boolean add(E e) {
+			synchronized(mutex) {
+				return list.add(e);
+			}
+		}
+		@Override
+		public boolean remove(Object o) {
+			synchronized(mutex) {
+				return list.remove(o);
+			}
+		}
+		@Override
+		public boolean containsAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.containsAll(coll);
+			}
+		}
+		@Override
+		public boolean addAll(Collection<? extends E> coll) {
+			synchronized(mutex) {
+				return list.addAll(coll);
+			}
+		}
+		@Override
+		public boolean removeAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.removeAll(coll);
+			}
+		}
+		@Override
+		public boolean retainAll(Collection<?> coll) {
+			synchronized(mutex) {
+				return list.retainAll(coll);
+			}
+		}
+		@Override
+		public void clear() {
+			synchronized(mutex) {
+				list.clear();
+			}
+		}
+		@Override
+		public String toString() {
+			synchronized(mutex) {
+				return list.toString();
+			}
+		}
+		private void writeObject(ObjectOutputStream s) throws IOException {
+			synchronized(mutex) {
+				s.defaultWriteObject();
+			}
+		}
+	}
 	/**
-	 * This inner class implements a sub-table.
-	 */
+	* This inner class implements a sub-table.
+	*/
 	private static final class SubTable extends FastCollection implements List, RandomAccess {
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8961471037048267243L;
 		private static final ObjectFactory FACTORY = new ObjectFactory() {
 			@Override
