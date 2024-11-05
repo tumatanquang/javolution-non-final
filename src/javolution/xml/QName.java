@@ -32,6 +32,9 @@ import javolution.util.FastMap;
  * @see <a href="http://en.wikipedia.org/wiki/Qname">Wikipedia: QName</a>
  */
 public final class QName implements XMLSerializable, Immutable, CharSequence {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 6249441553167361351L;
 	/**
 	 * Holds the local name.

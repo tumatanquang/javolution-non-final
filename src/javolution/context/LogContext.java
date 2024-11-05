@@ -88,6 +88,9 @@ import javolution.util.StandardLog;
  * @version 5.3, March 5, 2009
  */
 public abstract class LogContext extends Context {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -7572327461362405989L;
 	/**
 	 * Holds the default logging context instance.
@@ -486,6 +489,9 @@ public abstract class LogContext extends Context {
 	 * This class represents the system logging context.
 	 */
 	private static class SystemOut extends LogContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -4748588174095006625L;
 		@Override
 		protected void logMessage(String category, CharSequence message) {
@@ -499,6 +505,9 @@ public abstract class LogContext extends Context {
 	 * This class represents a non-logging context.
 	 */
 	private static final class Null extends SystemOut {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 7869294427329511896L;
 		@Override
 		protected boolean isLogged(String category) {
@@ -513,6 +522,9 @@ public abstract class LogContext extends Context {
 	 * This class represents the console logging context.
 	 */
 	private static class Console extends SystemOut {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -4138975251948055494L;
 		/*@JVM-1.6+@
 		final java.io.PrintWriter writer;

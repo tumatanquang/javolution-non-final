@@ -38,6 +38,9 @@ import javolution.xml.stream.XMLStreamException;
  * @version 4.2, December 31, 2006
  */
 public class PersistentContext extends Context {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -7528313688688616167L;
 	/**
 	 * Holds the single instance.

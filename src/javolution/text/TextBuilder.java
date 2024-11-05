@@ -31,6 +31,9 @@ import javolution.lang.Reusable;
  * @version 5.3, January 20, 2008
  */
 public class TextBuilder implements Appendable, CharSequence, Reusable, Realtime, Serializable {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -3523755313596362081L;
 	/**
 	 * Holds the factory for this text builder.

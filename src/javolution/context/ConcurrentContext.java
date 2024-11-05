@@ -147,6 +147,9 @@ import javolution.lang.Reflection;
  * @version 5.1, July 2, 2007
  */
 public abstract class ConcurrentContext extends Context {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 7440327290401541392L;
 	/**
 	 * Holds the maximum number of concurrent executors
@@ -295,6 +298,9 @@ public abstract class ConcurrentContext extends Context {
 	 * Default implementation using {@link ConcurrentThread} executors.
 	 */
 	static final class Default extends ConcurrentContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -2161891583866195858L;
 		/**
 		 * Holds the concurrent executors (created during class initialization).

@@ -32,6 +32,9 @@ import javolution.context.LogContext;
  * @version 5.3, March 13, 2007
  */
 public class StandardLog extends LogContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 810207847674193336L;
 	/**
 	 * The logger associated to this logging context.

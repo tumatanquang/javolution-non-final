@@ -23,6 +23,9 @@ package org.xml.sax;
  * @see org.xml.sax.SAXNotSupportedException
  */
 public class SAXNotRecognizedException extends SAXException {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 1398555601346822626L;
 	/**
 	 * Default constructor.

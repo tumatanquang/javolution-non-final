@@ -394,6 +394,9 @@ public class Configurable<T> {
 		try {
 			XMLObjectReader reader = XMLObjectReader.newInstance(inputStream);
 			XMLBinding binding = new XMLBinding() {
+				/**
+				 *
+				 */
 				private static final long serialVersionUID = -6876639158166301704L;
 				@Override
 				protected XMLFormat getFormat(Class forClass) throws XMLStreamException {

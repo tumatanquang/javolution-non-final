@@ -30,6 +30,9 @@ import javolution.lang.ValueType;
  * @version 5.2, August 19, 2007
  */
 public abstract class AllocatorContext extends Context {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 8666343315360396669L;
 	/**
 	 * Holds the default allocator context instance.
@@ -206,6 +209,9 @@ public abstract class AllocatorContext extends Context {
 		}
 	}
 	private static class OuterContext extends AllocatorContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -8883385929287474071L;
 		private AllocatorContext _outer;
 		private AllocatorContext _outerOuter;

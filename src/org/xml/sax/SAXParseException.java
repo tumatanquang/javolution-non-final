@@ -35,6 +35,9 @@ public class SAXParseException extends SAXException {
 	//////////////////////////////////////////////////////////////////////
 	// Constructors.
 	//////////////////////////////////////////////////////////////////////
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 1293915040175900569L;
 	/**
 	 * Create a new SAXParseException from a message and a Locator.

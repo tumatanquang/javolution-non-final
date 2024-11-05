@@ -43,6 +43,9 @@ import javolution.xml.XMLSerializable;
  * @version 5.0, April 15, 2007
  */
 public abstract class Context implements XMLSerializable {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -8063399552621820732L;
 	/**
 	 * Holds the root context. It is the current context for all newly created
@@ -223,6 +226,9 @@ public abstract class Context implements XMLSerializable {
 	}
 	// Holds the root context definition.
 	private static final class Root extends Context {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 8484215017514054856L;
 		@Override
 		protected void enterAction() {

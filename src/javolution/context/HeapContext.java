@@ -40,6 +40,9 @@ import javolution.util.FastTable;
  * @version 5.3, March 19, 2009
  */
 public class HeapContext extends AllocatorContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 3627422530869122218L;
 	/**
 	 * Holds the factory to allocator mapping (per thread).

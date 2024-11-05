@@ -43,6 +43,9 @@ import javolution.util.FastTable;
  * @version 5.3, March 10, 2009
  */
 public class PoolContext extends AllocatorContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 8802978532384410558L;
 	/**
 	 * Holds the factory to allocator mapping (per thread).

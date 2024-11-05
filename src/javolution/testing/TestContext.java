@@ -56,6 +56,9 @@ import javolution.util.FastTable;
  * @see    TestSuite
  */
 public abstract class TestContext extends LogContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 7960040088058934811L;
 	/**
 	 * Holds the test context default implementation (the test report is sent to
@@ -735,6 +738,9 @@ public abstract class TestContext extends LogContext {
 	}
 	// TestContext default implementation.
 	private static class Default extends TestContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 3492909584380125728L;
 		private int _passedCount;
 		private int _failedCount;
@@ -810,6 +816,9 @@ public abstract class TestContext extends LogContext {
 	}
 	// TestContext for regression tests.
 	private static class Console extends Default {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 465992963016176970L;
 		/*@JVM-1.6+@
 		final java.io.PrintWriter writer;
@@ -833,6 +842,9 @@ public abstract class TestContext extends LogContext {
 	}
 	// TestContext for regression tests.
 	private static class Regression extends TestContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -8240078224853870832L;
 		@Override
 		protected boolean doAssert(boolean value, CharSequence message) {

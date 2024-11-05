@@ -43,6 +43,9 @@ import javolution.util.FastTable;
  * @version 5.2, August 19, 2007
  */
 public abstract class StackContext extends AllocatorContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -6389695339786159020L;
 	/**
 	 * Holds the default implementation. This implementation uses thread-local
@@ -92,6 +95,9 @@ public abstract class StackContext extends AllocatorContext {
 	 * Default implementation.
 	 */
 	private static final class Default extends StackContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -379297573522499469L;
 		private final ThreadLocal _factoryToAllocator = new ThreadLocal() {
 			@Override

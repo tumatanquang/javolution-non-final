@@ -69,6 +69,9 @@ import javolution.xml.XMLSerializable;
  * @version 5.3, January 10, 2007
  */
 public final class Text implements CharSequence, Comparable, XMLSerializable, ValueType, Realtime {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -3116382974127488619L;
 	/**
 	 * Holds the default size for primitive blocks of characters.

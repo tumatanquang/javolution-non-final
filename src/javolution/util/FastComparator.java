@@ -20,6 +20,9 @@ import javolution.xml.XMLSerializable;
  * @version 5.3, April 23, 2009
  */
 public abstract class FastComparator<T> implements Comparator<T>, XMLSerializable {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -5156056610582873149L;
 	/**
 	 * Indicates if the system hash code should be rehashed
@@ -54,6 +57,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<Object> DEFAULT = new Default<Object>();
 	private static final class Default<T> extends FastComparator<T> {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 2911464987251997806L;
 		@Override
 		public int hashCodeOf(T obj) {
@@ -84,6 +90,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<Object> DIRECT = new Direct<Object>();
 	private static final class Direct<T> extends FastComparator<T> {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -1117574859570363763L;
 		@Override
 		public int hashCodeOf(T obj) {
@@ -114,6 +123,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<Object> REHASH = new Rehash<Object>();
 	private static final class Rehash<T> extends FastComparator<T> {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 2439803324451308969L;
 		@Override
 		public int hashCodeOf(T obj) {
@@ -150,6 +162,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<String> STRING = new StringComparator();
 	private static final class StringComparator extends FastComparator {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 5832357276731104235L;
 		@Override
 		public int hashCodeOf(Object obj) {
@@ -187,6 +202,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<Object> IDENTITY = new Identity();
 	private static final class Identity extends FastComparator {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -6883000732413182923L;
 		@Override
 		public int hashCodeOf(Object obj) {
@@ -224,6 +242,9 @@ public abstract class FastComparator<T> implements Comparator<T>, XMLSerializabl
 	 */
 	public static final FastComparator<CharSequence> LEXICAL = new Lexical();
 	private static final class Lexical extends FastComparator {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 5638226979341238055L;
 		@Override
 		public int hashCodeOf(Object obj) {

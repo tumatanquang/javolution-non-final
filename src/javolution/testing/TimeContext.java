@@ -33,6 +33,9 @@ import javolution.text.TextBuilder;
  * @version 5.2, August 5, 2007
  */
 public abstract class TimeContext extends TestContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -5036774089597438513L;
 	/**
 	 * Holds an implementation which does not perform any logging but raises an
@@ -206,6 +209,9 @@ public abstract class TimeContext extends TestContext {
 	}
 	// Holds the default implementation.
 	private static final class Default extends TimeContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = -8298385236081883397L;
 		private int _passedCount;
 		private int _failedCount;
@@ -337,6 +343,9 @@ public abstract class TimeContext extends TestContext {
 	}
 	// TestContext implementation with no output (just validation).
 	private static final class Regression extends TimeContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 3336759769463962111L;
 		@Override
 		protected boolean doAssert(boolean value, CharSequence message) {

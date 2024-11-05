@@ -32,6 +32,9 @@ package org.xml.sax;
  * @see org.xml.sax.SAXParseException
  */
 public class SAXException extends Exception {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = -8593587983557745947L;
 	/**
 	 * Create a new SAXException.

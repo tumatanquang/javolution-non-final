@@ -104,6 +104,9 @@ import javolution.xml.stream.XMLStreamWriter;
  * @version 5.4, December 1, 2009
  */
 public class XMLBinding implements Reusable, XMLSerializable {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 5198952274728534942L;
 	/**
 	 * Holds the default instance used by readers/writers (thread-safe).

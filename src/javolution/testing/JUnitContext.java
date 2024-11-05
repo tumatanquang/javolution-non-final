@@ -46,6 +46,9 @@ import javolution.text.Text;
  * @version 5.3, March 21, 2009
  */
 public class JUnitContext extends TestContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 8006127503429913555L;
 	/**
 	 * Enters a JUnit test context. This context raises a

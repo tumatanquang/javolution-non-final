@@ -50,6 +50,9 @@ import javolution.util.FastTable;
  * @version 5.2, August 19, 2007
  */
 public final class ImmortalContext extends AllocatorContext {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 4466484473482958180L;
 	/**
 	 * Holds the factory to allocator mapping (per thread).

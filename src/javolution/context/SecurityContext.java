@@ -66,6 +66,9 @@ import javolution.lang.Configurable;
  * @version 5.2, August 5, 2007
  */
 public abstract class SecurityContext extends Context {
+	/**
+	 *
+	 */
 	private static final long serialVersionUID = 6633593110989939L;
 	/**
 	 * Holds the default security context.
@@ -156,6 +159,9 @@ public abstract class SecurityContext extends Context {
 	 * Default implementation.
 	 */
 	private static class Default extends SecurityContext {
+		/**
+		 *
+		 */
 		private static final long serialVersionUID = 8929171883735885709L;
 	}
 	// Allows instances of private classes to be factory produced.
