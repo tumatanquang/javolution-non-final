@@ -27,9 +27,8 @@ jobs:
 
     - name: Download and Install JDK 6
       run: |
-        wget https://github.com/tumatanquang/mirror-oracle-jdk/raw/refs/heads/1.6/jdk-6u45-linux-x64.bin
-        chmod +x jdk-6u45-linux-x64.bin
-        ./jdk-6u45-linux-x64.bin
+        chmod +x lib/jdk-6u45-linux-x64.bin
+        ./lib/jdk-6u45-linux-x64.bin
 
     - name: Build Javolution 5.6.x on JDK 6
       run: ant -Dexecutable=$(pwd)/jdk1.6.0_45/bin/javac compile-jdk6

@@ -820,11 +820,6 @@ public class FastList<E> extends FastCollection<E> implements List<E>, Reusable 
 				return list.toString();
 			}
 		}
-		private void writeObject(ObjectOutputStream s) throws IOException {
-			synchronized(mutex) {
-				s.defaultWriteObject();
-			}
-		}
 	}
 	/**
 	 * This class represents a {@link FastList} node; it allows for direct

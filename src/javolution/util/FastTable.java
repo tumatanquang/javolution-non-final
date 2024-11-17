@@ -872,11 +872,6 @@ public class FastTable<E> extends FastCollection<E> implements List<E>, Reusable
 				return list.toString();
 			}
 		}
-		private void writeObject(ObjectOutputStream s) throws IOException {
-			synchronized(mutex) {
-				s.defaultWriteObject();
-			}
-		}
 	}
 	/**
 	* This inner class implements a sub-table.
