@@ -1,0 +1,25 @@
+name: Build Javolution Extended (MIDP 2.0 / CLDC 1.1)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install JDK 5
+      run: |
+        chmod +x lib/jdk-5u22-linux-x64.bin
+        ./lib/jdk-5u22-linux-x64.bin
+
+    - name: Build Javolution Extended
+      run: ant -Djavac.executable=$(pwd)/jdk1.5.0_22/bin/javac -Djavadoc.executable=$(pwd)/jdk1.5.0_22/bin/javadoc j2me
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: Javolution Extended v6.0.0 (J2ME)
+        path: target/javolution-extended-6.0.0.jar
+        compression-level: 9

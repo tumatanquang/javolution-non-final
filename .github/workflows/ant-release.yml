@@ -1,0 +1,132 @@
+name: Build and release Javolution Extended artifact
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  deployments: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install JDK 5
+      run: |
+        chmod +x lib/jdk-5u22-linux-x64.bin
+        ./lib/jdk-5u22-linux-x64.bin
+
+    - name: Build Javolution Extended (J2ME)
+      run: |
+        ant clean
+        ant -Djavac.executable=$(pwd)/jdk1.5.0_22/bin/javac -Djavadoc.executable=$(pwd)/jdk1.5.0_22/bin/javadoc j2me
+
+    - name: Rename J2ME artifact
+      run: mv target/javolution-extended-6.0.0.jar javolution-extended-6.0.0_j2me.jar
+
+    - name: Build Javolution Extended (J2SE 1.4+)
+      run: |
+        ant clean
+        ant -Djavac.executable=$(pwd)/jdk1.5.0_22/bin/javac -Djavadoc.executable=$(pwd)/jdk1.5.0_22/bin/javadoc 1.4
+
+    - name: Rename J2SE 1.4 artifact
+      run: mv target/javolution-extended-6.0.0.jar javolution-extended-6.0.0_jdk4.jar
+
+    - name: Build Javolution Extended (J2SE 1.5+)
+      run: |
+        ant clean
+        ant -Djavac.executable=$(pwd)/jdk1.5.0_22/bin/javac -Djavadoc.executable=$(pwd)/jdk1.5.0_22/bin/javadoc 1.5
+
+    - name: Rename J2SE 1.5 artifact
+      run: mv target/javolution-extended-6.0.0.jar javolution-extended-6.0.0_jdk5.jar
+
+    - name: Install JDK 6
+      run: |
+        chmod +x lib/jdk-6u45-linux-x64.bin
+        ./lib/jdk-6u45-linux-x64.bin
+
+    - name: Build Javolution Extended (J2SE 1.6+)
+      run: |
+        ant clean
+        ant -Djavac.executable=$(pwd)/jdk1.6.0_45/bin/javac -Djavadoc.executable=$(pwd)/jdk1.6.0_45/bin/javadoc 1.6
+
+    - name: Rename J2SE 1.6 artifact
+      run: mv target/javolution-extended-6.0.0.jar javolution-extended-6.0.0_jdk6.jar
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v6.0.0
+        release_name: v6.0.0
+        prerelease: false
+
+    - name: Upload J2ME artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./javolution-extended-6.0.0_j2me.jar
+        asset_name: javolution-extended-6.0.0_j2me.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload J2SE 1.4 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./javolution-extended-6.0.0_jdk4.jar
+        asset_name: javolution-extended-6.0.0_jdk4.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload J2SE 1.5 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./javolution-extended-6.0.0_jdk5.jar
+        asset_name: javolution-extended-6.0.0_jdk5.jar
+        asset_content_type: application/java-archive
+
+    - name: Upload J2SE 1.6 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./javolution-extended-6.0.0_jdk6.jar
+        asset_name: javolution-extended-6.0.0_jdk6.jar
+        asset_content_type: application/java-archive
+
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload API docs artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: target/site/apidocs/
+        include-hidden-files: true
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
