@@ -1,0 +1,720 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ANT BUILD FILE (Ref. http://jakarta.apache.org/ant) -->
+<project name="Javolution Extended" default="no-args" basedir=".">
+	<description>Javolution - Java(TM) Solution for Real-Time and Embedded Systems.</description>
+	<target name="_init">
+		<property name="encoding" value="UTF-8"/>
+		<property name="library" value="javolution-extended"/>
+		<property name="version" value="6.1.0"/>
+		<property name="jarpath" value="target/${library}-${version}"/>
+		<property name="src.dir" value="src/main/java"/>
+		<property name="javadoc.dir" value="src/main/javadoc"/>
+		<property name="src.dist" value="target/generated-sources/java"/>
+		<property name="build.dist" value="target/classes"/>
+		<property name="javadoc.dist" value="target/site/apidocs"/>
+		<property name="compile.debug" value="false"/>
+		<property name="compile.debuglevel" value="source,lines,vars"/>
+		<property name="compile.optimize" value="true"/>
+		<property name="compile.includeAntRuntime" value="false"/>
+	</target>
+	<target name="clean" depends="_init">
+		<delete quiet="false" failonerror="false" includeEmptyDirs="true">
+			<fileset dir="${build.dist}" includes="**/*"/>
+		</delete>
+		<delete quiet="false" failonerror="false" includeEmptyDirs="true">
+			<fileset dir="${javadoc.dist}" includes="**/*"/>
+		</delete>
+		<delete dir="target" quiet="false" failonerror="false" includeEmptyDirs="true"/>
+	</target>
+	<target name="_init_j2me">
+		<property name="vm" value="J2ME"/>
+		<property name="compile.fork" value="true"/>
+		<property name="compile.source" value="1.3"/>
+		<property name="compile.target" value="1.1"/>
+		<property name="compile.compiler" value="classic"/>
+		<copy todir="${src.dist}/j2me">
+			<fileset dir="${src.dir}/_templates/java"/>
+		</copy>
+		<copy todir="${src.dist}/j2mex">
+			<fileset dir="${src.dir}/_templates/javax"/>
+		</copy>
+		<copy todir="${src.dist}/javolution" >
+			<fileset dir="${src.dir}/_templates/javolution"/>
+		</copy>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.javolution]]></replacetoken>
+			<replacevalue><![CDATA[javolution]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[_templates.java.]]></replacetoken>
+				<replacevalue><![CDATA[j2me.]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[_templates.javax.]]></replacetoken>
+				<replacevalue><![CDATA[j2mex.]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<copy todir="${src.dist}/org/xml/sax3" filtering="false">
+			<fileset dir="${src.dir}/org/xml/sax"/>
+		</copy>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[org.xml.sax]]></replacetoken>
+			<replacevalue><![CDATA[org.xml.sax3]]></replacevalue>
+		</replace>
+	</target>
+	<target name="_init_1.4">
+		<property name="vm" value="J2SE 1.4+"/>
+		<property name="compile.fork" value="true"/>
+		<property name="compile.source" value="1.4"/>
+		<property name="compile.target" value="1.4"/>
+		<property name="compile.compiler" value="modern"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.2+" value="*/"/>
+		<filter token="JVM-1.3+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<copy todir="${src.dist}" filtering="true">
+			<fileset dir="${src.dir}/_templates"/>
+		</copy>
+		<delete dir="${src.dist}/java/"/>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution/util" encoding="${encoding}" includes="FastList.java,FastTable.java">
+			<replacetoken><![CDATA[, Queue/*<E>*/, Deque/*<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[import java.util.Queue;]]></replacetoken>
+				<replacevalue><![CDATA[]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[import java.util.Deque;]]></replacetoken>
+				<replacevalue><![CDATA[]]></replacevalue>
+			</replacefilter>
+		</replace>
+	</target>
+	<target name="_init_1.5">
+		<property name="vm" value="J2SE 1.5+"/>
+		<property name="compile.fork" value="true"/>
+		<property name="compile.source" value="1.5"/>
+		<property name="compile.target" value="1.5"/>
+		<property name="compile.compiler" value="modern"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.2+" value="*/"/>
+		<filter token="JVM-1.3+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<filter token="JVM-1.5+" value="*/"/>
+		<copy todir="${src.dist}" filtering="true">
+			<fileset dir="${src.dir}/_templates"/>
+		</copy>
+		<delete dir="${src.dist}/java/"/>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution/util" encoding="${encoding}" includes="FastList.java,FastTable.java">
+			<replacetoken><![CDATA[, Deque/*<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[import java.util.Deque;]]></replacetoken>
+				<replacevalue><![CDATA[]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<antcall target="_make_classes_parameterized"/>
+	</target>
+	<target name="_init_1.6">
+		<property name="vm" value="J2SE 1.6+"/>
+		<property name="compile.fork" value="true"/>
+		<property name="compile.source" value="1.6"/>
+		<property name="compile.target" value="1.6"/>
+		<property name="compile.compiler" value="modern"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.2+" value="*/"/>
+		<filter token="JVM-1.3+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<filter token="JVM-1.5+" value="*/"/>
+		<filter token="JVM-1.6+" value="*/"/>
+		<copy todir="${src.dist}" filtering="true">
+			<fileset dir="${src.dir}/_templates"/>
+		</copy>
+		<delete dir="${src.dist}/java/"/>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+		</replace>
+		<antcall target="_make_classes_parameterized"/>
+	</target>
+	<target name="_init_gcj">
+		<property name="vm" value="GCJ"/>
+		<property name="compile.source" value="1.4"/>
+		<property name="compile.target" value="1.4"/>
+		<property name="compile.compiler" value="gcj"/>
+		<filter token="JVM-1.1+" value="*/"/>
+		<filter token="JVM-1.2+" value="*/"/>
+		<filter token="JVM-1.3+" value="*/"/>
+		<filter token="JVM-1.4+" value="*/"/>
+		<copy todir="${src.dist}" filtering="true">
+			<fileset dir="${src.dir}/_templates"/>
+		</copy>
+		<delete dir="${src.dist}/java/"/>
+		<replace dir="${src.dist}" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution/util" encoding="${encoding}" includes="FastList.java,FastTable.java">
+			<replacetoken><![CDATA[, Queue/*<E>*/, Deque/*<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[import java.util.Queue;]]></replacetoken>
+				<replacevalue><![CDATA[]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[import java.util.Deque;]]></replacetoken>
+				<replacevalue><![CDATA[]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<copy todir="${src.dist}/org/xml" filtering="false">
+			<fileset dir="${src.dir}/org/xml"/>
+		</copy>
+	</target>
+	<target name="_make_classes_parameterized">
+	 	<!-- Replace Javolution Enum with Java Enum -->
+		<replace dir="${src.dist}" encoding="${encoding}" token="javolution.lang.Enum" value="java.lang.Enum" includes="**/*.java"/>
+		<delete file="${src.dist}/javolution/lang/Enum.java"/>
+	 	<!-- Remove javolution.text.Appendable (replaced by java.lang.Appendable) -->
+		<delete file="${src.dist}/javolution/text/Appendable.java"/>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[javolution.text.Appendable]]></replacetoken>
+			<replacevalue><![CDATA[java.lang.Appendable]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[MathLib.highestOneBit/*Integer.highestOneBit*/]]></replacetoken>
+			<replacevalue><![CDATA[Integer.highestOneBit]]></replacevalue>
+		</replace>
+		<!-- Return Types (more specialized return type)-->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/TextBuilder.java">
+			<replacetoken><![CDATA[Appendable/*TextBuilder*/]]></replacetoken>
+			<replacevalue><![CDATA[ TextBuilder ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastSet.java">
+			<replacetoken><![CDATA[FastCollection/*FastSet<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[FastSet<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastTable.java">
+			<replacetoken><![CDATA[FastCollection/*FastTable<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[FastTable<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastList.java">
+			<replacetoken><![CDATA[FastCollection/*FastList<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[FastList<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/CopyOnWriteArrayList.java">
+			<replacetoken><![CDATA[Object/*CopyOnWriteArrayList*/]]></replacetoken>
+			<replacevalue><![CDATA[CopyOnWriteArrayList]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastBooleanTable.java">
+			<replacetoken><![CDATA[Object/*FastBooleanTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastBooleanTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastBooleanTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastBooleanTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastBooleanIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastBooleanIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastByteTable.java">
+			<replacetoken><![CDATA[Object/*FastByteTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastByteTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastByteTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastByteTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastByteIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastByteIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastCharTable.java">
+			<replacetoken><![CDATA[Object/*FastCharTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastCharTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastCharTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastCharTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastCharIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastCharIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastDoubleTable.java">
+			<replacetoken><![CDATA[Object/*FastDoubleTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastDoubleTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastDoubleTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastDoubleTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastDoubleIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastDoubleIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastFloatTable.java">
+			<replacetoken><![CDATA[Object/*FastFloatTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastFloatTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastFloatTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastFloatTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastFloatIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastFloatIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastIntTable.java">
+			<replacetoken><![CDATA[Object/*FastIntTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastIntTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastIntTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastIntTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastIntIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastIntIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastLongTable.java">
+			<replacetoken><![CDATA[Object/*FastLongTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastLongTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastLongTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastLongTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastLongIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastLongIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastShortTable.java">
+			<replacetoken><![CDATA[Object/*FastShortTable*/]]></replacetoken>
+			<replacevalue><![CDATA[FastShortTable]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastShortTable*/]]></replacetoken>
+				<replacevalue><![CDATA[FastShortTable]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastShortIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastShortIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastBooleanSet.java">
+			<replacetoken><![CDATA[Object/*FastBooleanSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastBooleanSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastBooleanSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastBooleanSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastBooleanIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastBooleanIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastByteSet.java">
+			<replacetoken><![CDATA[Object/*FastByteSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastByteSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastByteSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastByteSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastByteIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastByteIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastCharSet.java">
+			<replacetoken><![CDATA[Object/*FastCharSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastCharSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastCharSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastCharSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastCharIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastCharIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastDoubleSet.java">
+			<replacetoken><![CDATA[Object/*FastDoubleSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastDoubleSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastDoubleSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastDoubleSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastDoubleIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastDoubleIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastFloatSet.java">
+			<replacetoken><![CDATA[Object/*FastFloatSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastFloatSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastFloatSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastFloatSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastFloatIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastFloatIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastIntSet.java">
+			<replacetoken><![CDATA[Object/*FastIntSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastIntSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastIntSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastIntSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastIntIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastIntIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastLongSet.java">
+			<replacetoken><![CDATA[Object/*FastLongSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastLongSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastLongSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastLongSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastLongIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastLongIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastShortSet.java">
+			<replacetoken><![CDATA[Object/*FastShortSet*/]]></replacetoken>
+			<replacevalue><![CDATA[FastShortSet]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[StringBuffer/*StringBuilder*/]]></replacetoken>
+				<replacevalue><![CDATA[StringBuilder]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveCollection/*FastShortSet*/]]></replacetoken>
+				<replacevalue><![CDATA[FastShortSet]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[FastPrimitiveIterator/*FastShortIterator*/]]></replacetoken>
+				<replacevalue><![CDATA[FastShortIterator]]></replacevalue>
+			</replacefilter>
+		</replace>
+		<!-- In Struct class -->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/Struct.java">
+			<replacetoken><![CDATA[/* <S extends Struct> S*/ Struct]]></replacetoken>
+			<replacevalue><![CDATA[ <S extends Struct> S ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/Struct.java">
+			<replacetoken><![CDATA[/*S*/Struct]]></replacetoken>
+			<replacevalue><![CDATA[ S ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/Struct.java">
+			<replacetoken><![CDATA[/*S*/ Struct]]></replacetoken>
+			<replacevalue><![CDATA[ S ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/Struct.java">
+			<replacetoken><![CDATA[/* <M extends Member> M*/ Member]]></replacetoken>
+			<replacevalue><![CDATA[ <M extends Member> M ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/Struct.java">
+			<replacetoken><![CDATA[/*M*/Member]]></replacetoken>
+			<replacevalue><![CDATA[ M ]]></replacevalue>
+		</replace>
+		<!-- In Generic Collections -->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastList.java">
+			<replacetoken><![CDATA[Record/*Node<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[Node<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/SharedFastList.java">
+			<replacetoken><![CDATA[Record/*Node<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[Node<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/UnmodifiableFastList.java">
+			<replacetoken><![CDATA[Record/*Node<E>*/]]></replacetoken>
+			<replacevalue><![CDATA[Node<E>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastMap.java">
+			<replacetoken><![CDATA[Record/*Entry<K,V>*/]]></replacetoken>
+			<replacevalue><![CDATA[Entry<K,V>]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/FastSet.java">
+			<replacetoken><![CDATA[Record/*FastMap.Entry<E,E>*/]]></replacetoken>
+			<replacevalue><![CDATA[FastMap.Entry<E,E>]]></replacevalue>
+		</replace>
+		<!-- Types from parameterized class. -->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[Object/*{]]></replacetoken>
+			<replacevalue><![CDATA[ ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/AllocatorContext.java">
+			<replacetoken><![CDATA[ValueType/*{]]></replacetoken>
+			<replacevalue><![CDATA[ ]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[}*/]]></replacetoken>
+			<replacevalue><![CDATA[ ]]></replacevalue>
+		</replace>
+		<!-- Variable length arguments, replace [] with ... -->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[[]/*...*/]]></replacetoken>
+			<replacevalue><![CDATA[...]]></replacevalue>
+		</replace>
+		<!-- Parameterized types-->
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[/*<]]></replacetoken>
+			<replacevalue><![CDATA[ <]]></replacevalue>
+		</replace>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[>*/]]></replacetoken>
+			<replacevalue><![CDATA[> ]]></replacevalue>
+		</replace>
+	</target>
+	<target name="_compile_j2me" depends="_init">
+		<mkdir dir="${build.dist}"/>
+		<!-- Compile everything in java generated directory -->
+		<javac srcdir="${src.dist}" destdir="${build.dist}" classpath="${build.dist}" encoding="${encoding}"
+			debug="${compile.debug}" debuglevel="${compile.debuglevel}"
+			optimize="${compile.optimize}" includeAntRuntime="${compile.includeAntRuntime}"
+			fork="${compile.fork}" executable="${javac.executable}"
+			target="${compile.target}" source="${compile.source}" compiler="${compile.compiler}">
+			<bootclasspath>
+				<fileset dir="${basedir}/lib" includes="cldc_1.1.jar"/>
+				<fileset dir="${basedir}/lib" includes="midp_2.0.jar"/>
+			</bootclasspath>
+		</javac>
+	</target>
+	<target name="_compile" depends="_init">
+		<mkdir dir="${build.dist}"/>
+		<!-- Compile everything in java generated directory -->
+		<javac srcdir="${src.dist}" destdir="${build.dist}" classpath="${build.dist}" encoding="${encoding}"
+			debug="${compile.debug}" debuglevel="${compile.debuglevel}"
+			optimize="${compile.optimize}" includeAntRuntime="${compile.includeAntRuntime}"
+			fork="${compile.fork}" executable="${javac.executable}"
+			target="${compile.target}" source="${compile.source}" compiler="${compile.compiler}">
+		</javac>
+	</target>
+	<target name="_doc" depends="_init">
+		<!-- Copies javadoc resources to generated classes directory -->
+		<copy todir="${src.dist}" overwrite="true">
+			<fileset dir="${javadoc.dir}"/>
+		</copy>
+		<!-- Copy www directory contents into target/site/apidocs/ -->
+		<copy todir="${javadoc.dist}">
+			<fileset dir="${basedir}/www"/>
+		</copy>
+		<tstamp>
+			<format property="current.year" pattern="yyyy"/>
+		</tstamp>
+		<javadoc sourcepath="${src.dist}" destdir="${javadoc.dist}" packagenames="javolution.*" classpath="${build.dist}"
+			overview="${javadoc.dir}/overview.html" encoding="${encoding}" version="true" author="true" splitindex="true"
+			windowtitle="Javolution Extended v${version} API" stylesheetfile="${javadoc.dir}/stylesheet.css" charset="${encoding}"
+			docencoding="${encoding}" excludepackagenames="javolution" executable="${javadoc.executable}">
+			<header>
+				<![CDATA[<A HREF="https://tumatanquang.github.io/javolution-extended/">
+				<SPAN CLASS="style0">J</SPAN>
+				<SPAN CLASS="style1">avolution Extended v${version} (${vm})</SPAN>
+				</A>]]>
+			</header>
+			<bottom>
+				<![CDATA[<i>Copyright &#169; 2005 - ${current.year} Javolution.</i>]]>
+			</bottom>
+		</javadoc>
+		<java classname="Colapi" classpath="${basedir}/lib/colapi.jar">
+			<arg value="${basedir}/${javadoc.dist}"/>
+		</java>
+	</target>
+	<target name="_jar" depends="_init">
+		<jar jarfile="${jarpath}.jar" basedir="${build.dist}" update="false">
+			<manifest>
+				<attribute name="Specification-Title" value="Javolution Extended"/>
+				<attribute name="Specification-Version" value="${version} (${vm})"/>
+				<attribute name="Specification-Vendor" value="Javolution"/>
+				<attribute name="Implementation-Title" value="Javolution Extended"/>
+				<attribute name="Implementation-URL" value="https://github.com/tumatanquang/javolution-extended"/>
+				<attribute name="Implementation-Vendor" value="Javolution"/>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="MIDlet-Info-URL" value="https://github.com/tumatanquang/javolution-extended"/>
+				<attribute name="Nokia-Update" value="https://github.com/tumatanquang/javolution-extended/releases"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="_zip" depends="_init">
+		<zip destfile="${jarpath}-src.zip" update="false">
+			<zipfileset dir="." prefix="${library}" includes="src/**/*, ${javadoc.dist}/**/*, pom.xml, build.xml, colapi.jar, www/LICENSE.txt, www/index.html, www/css/**/*"/>
+		</zip>
+		<zip destfile="${jarpath}-bin.zip" update="false">
+			<zipfileset dir="." prefix="${library}" includes="${jarpath}.jar, pom.xml, build.xml, colapi.jar, www/LICENSE.txt, www/index.html, www/css/**/*"/>
+		</zip>
+	</target>
+	<target name="_test_init" depends="_init">
+		<fail unless="test.runtime" message="Specify -Dtest.runtime=j2me|1.4|1.5|1.6"/>
+		<condition property="test.runtime.valid">
+			<or>
+				<equals arg1="${test.runtime}" arg2="j2me"/>
+				<equals arg1="${test.runtime}" arg2="1.4"/>
+				<equals arg1="${test.runtime}" arg2="1.5"/>
+				<equals arg1="${test.runtime}" arg2="1.6"/>
+			</or>
+		</condition>
+		<fail unless="test.runtime.valid" message="Invalid test.runtime '${test.runtime}'; expected j2me, 1.4, 1.5, or 1.6"/>
+		<property name="test.root" value="target/test-all/${test.runtime}"/>
+		<property name="test.src.dist" value="${test.root}/generated-sources/java"/>
+		<property name="test.build.dist" value="${test.root}/classes"/>
+		<property name="test.report.dir" value="${test.root}/reports"/>
+		<property name="test.j2me.runner.args" value=""/>
+		<delete dir="${test.root}" quiet="true" failonerror="false"/>
+		<mkdir dir="${test.src.dist}"/>
+		<mkdir dir="${test.build.dist}"/>
+		<mkdir dir="${test.report.dir}"/>
+	</target>
+	<target name="_test_copy_j2se">
+		<copy todir="${src.dist}/javolution">
+			<fileset dir="${basedir}/src/test/java/javolution"/>
+		</copy>
+		<delete file="${src.dist}/javolution/JavolutionTest.java"/>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="*.java">
+			<replacetoken><![CDATA[_templates.]]></replacetoken>
+			<replacevalue><![CDATA[]]></replacevalue>
+		</replace>
+	</target>
+	<target name="_test_copy_j2me">
+		<copy todir="${src.dist}/javolution">
+			<fileset dir="${basedir}/src/test/java/javolution"/>
+		</copy>
+		<delete file="${src.dist}/javolution/JavolutionTest.java"/>
+		<replace dir="${src.dist}/javolution" encoding="${encoding}" includes="**/*.java">
+			<replacetoken><![CDATA[_templates.javolution]]></replacetoken>
+			<replacevalue><![CDATA[javolution]]></replacevalue>
+			<replacefilter>
+				<replacetoken><![CDATA[_templates.java.]]></replacetoken>
+				<replacevalue><![CDATA[j2me.]]></replacevalue>
+			</replacefilter>
+			<replacefilter>
+				<replacetoken><![CDATA[_templates.javax.]]></replacetoken>
+				<replacevalue><![CDATA[j2mex.]]></replacevalue>
+			</replacefilter>
+		</replace>
+	</target>
+	<target name="_test_compile_j2me" depends="_init_j2me,_test_copy_j2me,_compile_j2me"/>
+	<target name="_test_compile_1.4" depends="_init_1.4,_test_copy_j2se,_compile"/>
+	<target name="_test_compile_1.5" depends="_init_1.5,_test_copy_j2se,_compile"/>
+	<target name="_test_compile_1.6" depends="_init_1.6,_test_copy_j2se,_compile"/>
+	<target name="_test_compile" depends="_test_init">
+		<antcall target="_test_compile_${test.runtime}">
+			<param name="src.dist" value="${test.src.dist}"/>
+			<param name="build.dist" value="${test.build.dist}"/>
+		</antcall>
+	</target>
+	<target name="_test_run_j2se">
+		<java classname="javolution.AllTestRunner" fork="true" failonerror="true"
+			classpath="${test.build.dist}" output="${test.report.dir}/test-all.txt"/>
+	</target>
+	<target name="_test_run_1.4" depends="_test_run_j2se"/>
+	<target name="_test_run_1.5" depends="_test_run_j2se"/>
+	<target name="_test_run_1.6" depends="_test_run_j2se"/>
+	<target name="_test_run_j2me_configured" if="test.j2me.runner">
+		<exec executable="${test.j2me.runner}" failonerror="true" output="${test.report.dir}/test-all.txt">
+			<arg line="${test.j2me.runner.args}"/>
+			<arg value="${test.build.dist}"/>
+			<arg value="javolution.AllTestRunner"/>
+		</exec>
+	</target>
+	<target name="_test_run_j2me_unconfigured" unless="test.j2me.runner">
+		<echo>J2ME tests compiled only; set -Dtest.j2me.runner and optional -Dtest.j2me.runner.args to execute them.</echo>
+	</target>
+	<target name="_test_run_j2me" depends="_test_run_j2me_configured,_test_run_j2me_unconfigured"/>
+	<target name="_test_run" depends="_test_compile">
+		<antcall target="_test_run_${test.runtime}"/>
+	</target>
+	<target name="test-all" depends="_test_run" description="Manually compiles and runs the complete isolated test suite"/>
+	<target name="no-args">
+		<echo>Please select one of the following targets:</echo>
+		<echo>	j2me (J2ME CLDC 1.1+)</echo>
+		<echo>	gcj (GNU Compiler for Java - GCC 3.2)</echo>
+		<echo>	1.4 (J2SE 1.4+)</echo>
+		<echo>	1.5 (J2SE 1.5+)</echo>
+		<echo>	1.6 (J2SE 1.6+)</echo>
+		<echo>(use -Dcompile.debug=true to turn on debug information)</echo>
+		<fail message="No target specified"/>
+	</target>
+	<target name="j2me" depends="clean, _init_j2me, _compile_j2me, _doc, _jar, _zip"/>
+	<target name="gcj" depends="clean, _init_gcj, _compile, _doc, _jar, _zip">
+		<echo>Build shared library ${library}.so</echo>
+		<exec executable="gcj">
+			<arg line='-shared -o ${jarpath}.so ${jarpath}.jar'/>
+		</exec>
+	</target>
+	<target name="1.4" depends="clean, _init_1.4, _compile, _doc, _jar, _zip"/>
+	<target name="1.5" depends="clean, _init_1.5, _compile, _doc, _jar, _zip"/>
+	<target name="1.6" depends="clean, _init_1.6, _compile, _doc, _jar, _zip"/>
+	<target name="compile" depends="clean, _init_1.5, _compile, _jar, _doc"/>
+	<target name="maven" depends="_init, _init_1.5"/>
+</project>

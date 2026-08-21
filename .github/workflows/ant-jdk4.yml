@@ -1,0 +1,25 @@
+name: Build Javolution Extended (J2SE 1.4+)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install JDK 5
+      run: |
+        chmod +x lib/jdk-5u22-linux-x64.bin
+        ./lib/jdk-5u22-linux-x64.bin
+
+    - name: Build Javolution Extended
+      run: ant -Djavac.executable=$(pwd)/jdk1.5.0_22/bin/javac -Djavadoc.executable=$(pwd)/jdk1.5.0_22/bin/javadoc 1.4
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: Javolution Extended v6.1.0 (J2SE 1.4+)
+        path: target/javolution-extended-6.1.0.jar
+        compression-level: 9

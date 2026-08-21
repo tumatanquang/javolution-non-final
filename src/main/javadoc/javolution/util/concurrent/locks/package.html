@@ -1,0 +1,22 @@
+<body>
+<p>Provides interfaces and classes for locking and thread synchronization,
+   offering finer-grained control than standard Java monitor locks,
+   based on the original <code>util.concurrent</code> library by Doug Lea and extended with modern synchronization primitives.</p>
+
+<h2>Overview:</h2>
+<p>This package includes the following synchronization utilities:</p>
+<ul>
+  <li><b>Locking Abstraction:</b> The {@link javolution.util.concurrent.locks.Sync Sync} interface provides a uniform
+      API for lock acquisition (including non-blocking and timed options) and release.</li>
+  <li><b>Lock Implementations:</b> Mutual exclusion locks such as {@link javolution.util.concurrent.locks.Mutex Mutex}
+      and {@link javolution.util.concurrent.locks.ReentrantLock ReentrantLock}.</li>
+  <li><b>Read-Write Locks:</b> The {@link javolution.util.concurrent.locks.ReadWriteLock ReadWriteLock} interface and
+      implementations like {@link javolution.util.concurrent.locks.WriterPreferenceReadWriteLock WriterPreferenceReadWriteLock},
+      {@link javolution.util.concurrent.locks.ReentrantWriterPreferenceReadWriteLock ReentrantWriterPreferenceReadWriteLock},
+      and {@link javolution.util.concurrent.locks.FIFOReadWriteLock FIFOReadWriteLock} to support multiple concurrent readers
+      and exclusive writers.</li>
+  <li><b>Condition Variables:</b> {@link javolution.util.concurrent.locks.CondVar CondVar} classes that allow threads to
+      suspend execution until a specific condition is met, functioning similarly to monitor wait/notify but associated with
+      a specific {@link javolution.util.concurrent.locks.Sync Sync} instance.</li>
+</ul>
+</body>
