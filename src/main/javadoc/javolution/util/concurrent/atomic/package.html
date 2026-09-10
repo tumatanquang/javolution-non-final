@@ -1,0 +1,18 @@
+<body>
+<p>Provides synchronized and waitable variable classes for concurrent atomic-like operations, 
+   based on the original <code>util.concurrent</code> library by Doug Lea.</p>
+
+<h2>Overview:</h2>
+<p>This package offers wrapper classes around primitive types and object references, facilitating thread-safe access 
+   and coordination without requiring explicit block-level synchronization by the caller:</p>
+<ul>
+  <li><b>Synchronized Variables:</b> Wrapper classes such as {@link javolution.util.concurrent.atomic.SynchronizedInt SynchronizedInt}, 
+      {@link javolution.util.concurrent.atomic.SynchronizedLong SynchronizedLong}, and 
+      {@link javolution.util.concurrent.atomic.SynchronizedRef SynchronizedRef} provide thread-safe getter, setter, 
+      and atomic update operations (such as increment, decrement, and compare-and-swap equivalents).</li>
+  <li><b>Waitable Variables:</b> Classes like {@link javolution.util.concurrent.atomic.WaitableInt WaitableInt}, 
+      {@link javolution.util.concurrent.atomic.WaitableBoolean WaitableBoolean}, and 
+      {@link javolution.util.concurrent.atomic.WaitableRef WaitableRef} allow threads to wait for specific value states 
+      or transitions, providing a high-level alternative to manual wait/notify structures.</li>
+</ul>
+</body>

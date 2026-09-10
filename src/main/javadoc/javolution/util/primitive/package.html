@@ -1,0 +1,54 @@
+<body>
+<p>Provides high-performance, zero-boxing primitive collections including resizable tables
+   ({@code Fast<Type>Table}) and open-addressing hash sets ({@code Fast<Type>Set}) for Java primitive types,
+   avoiding object creation and auto-boxing overhead.</p>
+
+<h2>Overview:</h2>
+<p>All primitive collections in this package extend the abstract base class
+   {@link javolution.util.primitive.FastPrimitiveCollection FastPrimitiveCollection} and implement
+   {@link javolution.lang.Reusable Reusable} for zero-GC object recycling:</p>
+
+<h2>Migration from the pre-6.0 API:</h2>
+<p>Version 6.0 removes the former {@code Fast<Type>ArrayList} classes in favor
+   of {@code Fast<Type>Table}, and replaces {@code FastPrimitiveList} with
+   {@code FastPrimitiveCollection}. This is an intentional source and binary
+   compatibility break: applications must update imports and recompile. No
+   deprecated aliases, adapters, or duplicate compatibility classes are
+   provided.</p>
+
+<h3>1. Resizable Segmented Tables:</h3>
+<ul>
+  <li>{@link javolution.util.primitive.FastBooleanTable FastBooleanTable} for <code>boolean</code></li>
+  <li>{@link javolution.util.primitive.FastByteTable FastByteTable} for <code>byte</code></li>
+  <li>{@link javolution.util.primitive.FastCharTable FastCharTable} for <code>char</code></li>
+  <li>{@link javolution.util.primitive.FastShortTable FastShortTable} for <code>short</code></li>
+  <li>{@link javolution.util.primitive.FastIntTable FastIntTable} for <code>int</code></li>
+  <li>{@link javolution.util.primitive.FastLongTable FastLongTable} for <code>long</code></li>
+  <li>{@link javolution.util.primitive.FastFloatTable FastFloatTable} for <code>float</code></li>
+  <li>{@link javolution.util.primitive.FastDoubleTable FastDoubleTable} for <code>double</code></li>
+</ul>
+
+<h3>2. Open-Addressing Hash Sets:</h3>
+<ul>
+  <li>{@link javolution.util.primitive.FastBooleanSet FastBooleanSet} for <code>boolean</code></li>
+  <li>{@link javolution.util.primitive.FastByteSet FastByteSet} for <code>byte</code></li>
+  <li>{@link javolution.util.primitive.FastCharSet FastCharSet} for <code>char</code></li>
+  <li>{@link javolution.util.primitive.FastShortSet FastShortSet} for <code>short</code></li>
+  <li>{@link javolution.util.primitive.FastIntSet FastIntSet} for <code>int</code></li>
+  <li>{@link javolution.util.primitive.FastLongSet FastLongSet} for <code>long</code></li>
+  <li>{@link javolution.util.primitive.FastFloatSet FastFloatSet} for <code>float</code></li>
+  <li>{@link javolution.util.primitive.FastDoubleSet FastDoubleSet} for <code>double</code></li>
+</ul>
+
+<h2>Architecture & Real-Time Predictability:</h2>
+<p>Unlike standard collections that allocate huge contiguous arrays or individual entry objects,
+   {@code Fast<Type>Table} allocates memory in small, fixed blocks of 1024 elements (Zero-GC fragmentation),
+   and {@code Fast<Type>Set} utilizes high-dispersion open-addressing hash tables with linear probing directly over
+   flat primitive arrays, reducing memory consumption by 80-90%.</p>
+
+<h2>Primitive Iterators and Views:</h2>
+<p>Iteration without boxing is supported via {@link javolution.util.primitive.FastPrimitiveIterator FastPrimitiveIterator}
+   and specialized primitive iterator interfaces (such as {@link javolution.util.primitive.FastIntIterator FastIntIterator}).
+   In addition, each primitive collection supports thread-safe views (via <code>shared()</code>) and read-only views
+   (via <code>unmodifiable()</code>).</p>
+</body>

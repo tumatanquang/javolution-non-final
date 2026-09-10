@@ -1,0 +1,1324 @@
+/*
+ * Javolution - Java(TM) Solution for Real-Time and Embedded Systems
+ * Copyright (C) 2005 - Javolution (http://javolution.org/)
+ * All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software is
+ * freely granted, provided that this notice is preserved.
+ */
+package _templates.javolution.util.primitive;
+import java.io.IOException;
+import _templates.java.io.ObjectInputStream;
+import _templates.java.io.ObjectOutputStream;
+import _templates.java.io.Serializable;
+import _templates.java.lang.CloneNotSupportedException;
+import _templates.java.lang.Cloneable;
+import _templates.java.lang.IllegalStateException;
+import _templates.java.lang.UnsupportedOperationException;
+import _templates.java.util.NoSuchElementException;
+import _templates.javax.realtime.MemoryArea;
+import _templates.javolution.lang.Reusable;
+import _templates.javolution.util.concurrent.locks.ReadWriteLock;
+import _templates.javolution.util.concurrent.locks.ReentrantWriterPreferenceReadWriteLock;
+import _templates.javolution.util.concurrent.locks.Sync;
+/**
+ * <p> This class represents a high-performance, open-addressing hash set of <code>double</code>
+ *     primitive values with linear probing.</p>
+ *
+ * <p> Unlike standard <code>java.util.HashSet&lt;Double&gt;</code> or <code>FastSet&lt;Double&gt;</code>
+ *     which allocate wrapping objects and entry nodes for every single value, {@link FastDoubleSet}
+ *     stores elements in a single contiguous primitive array without any boxing overhead.
+ *     Memory consumption is reduced by 80-90% and cache locality is maximized.</p>
+ *
+ * <p> Standard mathematical set semantics (no duplicate elements, $\mathcal{O}(1)$ average
+ *     time complexity for lookup, insertion, and deletion) are guaranteed.</p>
+ *
+ * @author <a href="mailto:jean-marie@dautelle.com">Jean-Marie Dautelle</a>
+ * @version 6.1.0, August 22, 2026
+ */
+public class FastDoubleSet extends FastPrimitiveCollection
+		implements Cloneable, Reusable, Serializable {
+	private static final byte FREE = 0;
+	private static final byte OCCUPIED = 1;
+	private static final byte REMOVED = 2;
+	private static final int DEFAULT_CAPACITY = 16;
+	private static final float LOAD_FACTOR = 0.75f;
+	/**
+	 * Holds the table entries.
+	 */
+	private transient double[] _table;
+	/**
+	 * Holds the state of each slot in the table (FREE, OCCUPIED, or REMOVED).
+	 */
+	private transient byte[] _state;
+	/**
+	 * Holds the bitmask for hash modulo calculations.
+	 */
+	private transient int _mask;
+	/**
+	 * Holds the resize threshold.
+	 */
+	private transient int _threshold;
+	/**
+	 * Holds the count of used slots (OCCUPIED + REMOVED).
+	 */
+	private transient int _used;
+	/**
+	 * Constructs an empty set with default initial capacity (16).
+	 */
+	public FastDoubleSet() {
+		this(DEFAULT_CAPACITY);
+	}
+	/**
+	 * Constructs an empty set with the specified initial capacity.
+	 *
+	 * @param capacity the initial capacity.
+	 */
+	public FastDoubleSet(int capacity) {
+		int cap = DEFAULT_CAPACITY;
+		final int min = Math.max(DEFAULT_CAPACITY, capacity);
+		while(cap < min) {
+			cap <<= 1;
+		}
+		_table = new double[cap];
+		_state = new byte[cap];
+		_mask = cap - 1;
+		_threshold = (int) (cap * LOAD_FACTOR);
+	}
+	/**
+	 * Constructs a set containing the elements of the specified array.
+	 *
+	 * @param values the array of initial values.
+	 * @throws NullPointException if values is null
+	 */
+	public FastDoubleSet(double[] values) {
+		this(values.length);
+		addAll(values);
+	}
+	/**
+	 * Constructs a set containing the elements of the specified set.
+	 *
+	 * @param values the set of initial values.
+	 * @throws NullPointException if values is null
+	 */
+	public FastDoubleSet(FastDoubleSet values) {
+		this(values.size());
+		addAll(values);
+	}
+	private final int hash(double value) {
+		final long bits = Double.doubleToLongBits(value);
+		long h = bits * 0x9E3779B97F4A7C15L;
+		h ^= h >>> 32;
+		return (int) h & _mask;
+	}
+	private static final boolean equals(double v1, double v2) {
+		return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
+	}
+	private final void rehash(final int newCapacity) {
+		MemoryArea.getMemoryArea(this).executeInArea(new Runnable() {
+			public final void run() {
+				final double[] oldTable = _table;
+				final byte[] oldState = _state;
+				final int oldCap = oldTable.length;
+				_table = new double[newCapacity];
+				_state = new byte[newCapacity];
+				_mask = newCapacity - 1;
+				_threshold = (int) (newCapacity * LOAD_FACTOR);
+				_used = 0;
+				for(int i = 0; i < oldCap; ++i) {
+					if(oldState[i] == OCCUPIED) {
+						final double val = oldTable[i];
+						int idx = hash(val);
+						while(_state[idx] != FREE) {
+							idx = idx + 1 & _mask;
+						}
+						_table[idx] = val;
+						_state[idx] = OCCUPIED;
+						++_used;
+					}
+				}
+			}
+		});
+	}
+	/**
+	 * Adds the specified value to this set if it is not already present.
+	 *
+	 * @param value the value to be added.
+	 * @return <code>true</code> if this set did not already contain the specified value.
+	 */
+	public boolean add(double value) {
+		final int length = _table.length;
+		int idx = hash(value), firstRemoved = -1, free = -1;
+		for(int probes = -1; ++probes < length;) {
+			final byte state = _state[idx];
+			if(state == FREE) {
+				free = idx;
+				break;
+			}
+			if(state == OCCUPIED) {
+				if(equals(_table[idx], value))
+					return false;
+			}
+			else if(firstRemoved < 0) {
+				firstRemoved = idx;
+			}
+			idx = idx + 1 & _mask;
+		}
+		final int targetIdx = firstRemoved >= 0 ? firstRemoved : free;
+		if(targetIdx < 0) {
+			rehash(_size + 1 >= _threshold ? length << 1 : length);
+			return add(value);
+		}
+		if(_size + 1 >= _threshold) {
+			rehash(length << 1);
+			return add(value);
+		}
+		if(_used + (_state[targetIdx] == FREE ? 1 : 0) >= _threshold) {
+			rehash(length);
+			return add(value);
+		}
+		_table[targetIdx] = value;
+		if(_state[targetIdx] == FREE) {
+			++_used;
+		}
+		_state[targetIdx] = OCCUPIED;
+		++_size;
+		return true;
+	}
+	/**
+	 * Returns <code>true</code> if this set contains the specified value.
+	 *
+	 * @param value the value whose presence in this set is to be tested.
+	 * @return <code>true</code> if this set contains the specified value.
+	 */
+	public boolean contains(double value) {
+		if(_size == 0)
+			return false;
+		final int length = _table.length;
+		int idx = hash(value);
+		for(int probes = -1; ++probes < length;) {
+			if(_state[idx] == FREE)
+				return false;
+			if(_state[idx] == OCCUPIED && equals(_table[idx], value))
+				return true;
+			idx = idx + 1 & _mask;
+		}
+		return false;
+	}
+	/**
+	 * Removes the specified value from this set if it is present.
+	 *
+	 * @param value the value to be removed from this set, if present.
+	 * @return <code>true</code> if this set contained the specified value.
+	 */
+	public boolean remove(double value) {
+		if(_size == 0)
+			return false;
+		final int length = _table.length;
+		int idx = hash(value);
+		for(int probes = -1; ++probes < length;) {
+			if(_state[idx] == FREE)
+				return false;
+			if(_state[idx] == OCCUPIED && equals(_table[idx], value)) {
+				_state[idx] = REMOVED;
+				--_size;
+				return true;
+			}
+			idx = idx + 1 & _mask;
+		}
+		return false;
+	}
+	/**
+	 * Removes the specified value from this set if it is present.
+	 *
+	 * @param value the value to be removed from this set, if present.
+	 * @return <code>true</code> if this set contained the specified value.
+	 */
+	public boolean removeElement(double value) {
+		return remove(value);
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public void clear() {
+		if(_used == 0)
+			return;
+		final int length = _state.length;
+		for(int i = -1; ++i < length;) {
+			_state[i] = FREE;
+		}
+		_size = 0;
+		_used = 0;
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public void reset() {
+		clear();
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public void trimToSize() {
+		int minCap = DEFAULT_CAPACITY;
+		while(minCap * LOAD_FACTOR < _size) {
+			minCap <<= 1;
+		}
+		if(minCap < _table.length) {
+			rehash(minCap);
+		}
+		else if(_used > _size) {
+			rehash(_table.length);
+		}
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public void ensureCapacity(int minCapacity) {
+		if(minCapacity > _threshold) {
+			int newCap = _table.length;
+			while(newCap * LOAD_FACTOR < minCapacity) {
+				newCap <<= 1;
+			}
+			rehash(newCap);
+		}
+	}
+	/**
+	 * Adds all elements from the specified array to this set.
+	 *
+	 * @param values array containing elements to be added.
+	 * @return <code>true</code> if this set changed as a result of the call.
+	 */
+	public boolean addAll(double[] values) {
+		final int length;
+		if(values == null || (length = values.length) == 0)
+			return false;
+		boolean modified = false;
+		ensureCapacity(_size + length);
+		for(int i = -1; ++i < length;) {
+			if(add(values[i])) {
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	/**
+	 * Adds all elements from the specified set to this set.
+	 *
+	 * @param values set containing elements to be added.
+	 * @return <code>true</code> if this set changed as a result of the call.
+	 */
+	public boolean addAll(FastDoubleSet values) {
+		if(values == null || values.isEmpty())
+			return false;
+		boolean modified = false;
+		ensureCapacity(_size + values.size());
+		final FastDoubleIterator it = (FastDoubleIterator) values.iterator();
+		while(it.hasNext()) {
+			if(add(it.next())) {
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	/**
+	 * Returns <code>true</code> if this set contains all elements of the specified array.
+	 *
+	 * @param values array of elements to be checked for containment in this set.
+	 * @return <code>true</code> if this set contains all elements of the specified array.
+	 */
+	public boolean containsAll(double[] values) {
+		final int length;
+		if(values == null || (length = values.length) == 0)
+			return true;
+		if(_size == 0)
+			return false;
+		for(int i = -1; ++i < length;) {
+			if(!contains(values[i]))
+				return false;
+		}
+		return true;
+	}
+	/**
+	 * Returns <code>true</code> if this set contains all elements of the specified set.
+	 *
+	 * @param values set of elements to be checked for containment in this set.
+	 * @return <code>true</code> if this set contains all elements of the specified set.
+	 */
+	public boolean containsAll(FastDoubleSet values) {
+		if(values == null || values.isEmpty())
+			return true;
+		if(_size == 0)
+			return false;
+		final FastDoubleIterator it = (FastDoubleIterator) values.iterator();
+		while(it.hasNext()) {
+			if(!contains(it.next()))
+				return false;
+		}
+		return true;
+	}
+	/**
+	 * Removes from this set all of its elements that are contained in the specified array.
+	 *
+	 * @param values array containing elements to be removed from this set.
+	 * @return <code>true</code> if this set changed as a result of the call.
+	 */
+	public boolean removeAll(double[] values) {
+		final int length;
+		if(values == null || (length = values.length) == 0 || _size == 0)
+			return false;
+		boolean modified = false;
+		for(int i = -1; ++i < length;) {
+			if(remove(values[i])) {
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	/**
+	 * Removes from this set all of its elements that are contained in the specified set.
+	 *
+	 * @param values set containing elements to be removed from this set.
+	 * @return <code>true</code> if this set changed as a result of the call.
+	 */
+	public boolean removeAll(FastDoubleSet values) {
+		if(values == null || values.isEmpty() || _size == 0)
+			return false;
+		boolean modified = false;
+		final FastDoubleIterator it = (FastDoubleIterator) values.iterator();
+		while(it.hasNext()) {
+			if(remove(it.next())) {
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	/**
+	 * Retains only the elements in this set that are contained in the specified set.
+	 *
+	 * @param values set containing elements to be retained in this set.
+	 * @return <code>true</code> if this set changed as a result of the call.
+	 */
+	public boolean retainAll(FastDoubleSet values) {
+		if(values == null || _size == 0)
+			return false;
+		final int length = _table.length;
+		boolean modified = false;
+		for(int i = -1; ++i < length;) {
+			if(_state[i] == OCCUPIED && !values.contains(_table[i])) {
+				_state[i] = REMOVED;
+				--_size;
+				modified = true;
+			}
+		}
+		return modified;
+	}
+	/**
+	 * Returns an array containing all of the elements in this set.
+	 *
+	 * @return an array containing all of the elements in this set.
+	 */
+	public double[] toArray() {
+		final double[] result = new double[_size];
+		if(_size == 0)
+			return result;
+		final int length = _table.length;
+		for(int i = -1, j = -1; ++i < length;) {
+			if(_state[i] == OCCUPIED) {
+				result[++j] = _table[i];
+			}
+		}
+		return result;
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public FastPrimitiveIterator/*FastDoubleIterator*/ iterator() {
+		return new SetIterator(this);
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public FastPrimitiveCollection/*FastDoubleSet*/ unmodifiable() {
+		return new Unmodifiable(this);
+	}
+	/**
+	 * {@inheritDoc}
+	 */
+	public FastPrimitiveCollection/*FastDoubleSet*/ shared() {
+		return new Shared(this);
+	}
+	/**
+	 * Returns a copy of this set.
+	 *
+	 * @return a clone of this instance.
+	 * @throws CloneNotSupportedException if cloning is not supported.
+	 */
+	public Object/*FastDoubleSet*/ clone() throws CloneNotSupportedException {
+		/*@JVM-1.1+@
+		if(true) {
+			final FastDoubleSet c = (FastDoubleSet) super.clone();
+			c._table = new double[_table.length];
+			c._state = new byte[_state.length];
+			System.arraycopy(_table, 0, c._table, 0, _table.length);
+			System.arraycopy(_state, 0, c._state, 0, _state.length);
+			c._mask = _mask;
+			c._threshold = _threshold;
+			c._used = _used;
+			c._size = _size;
+			return c;
+		}
+		/**/
+		throw new UnsupportedOperationException("J2ME Not Supported Yet");
+	}
+	private final void writeObject(ObjectOutputStream s) throws IOException {
+		s.defaultWriteObject();
+		s.writeInt(_size);
+		final int length = _table.length;
+		for(int i = -1; ++i < length;) {
+			if(_state[i] == OCCUPIED) {
+				s.writeDouble(_table[i]);
+			}
+		}
+	}
+	private final void readObject(ObjectInputStream s)
+			throws IOException, ClassNotFoundException {
+		s.defaultReadObject();
+		final int count = s.readInt();
+		int cap = DEFAULT_CAPACITY;
+		while(cap < count) {
+			cap <<= 1;
+		}
+		_table = new double[cap];
+		_state = new byte[cap];
+		_mask = cap - 1;
+		_threshold = (int) (cap * LOAD_FACTOR);
+		_size = 0;
+		_used = 0;
+		for(int i = -1; ++i < count;) {
+			add(s.readDouble());
+		}
+	}
+	/**
+	 * Compares the specified object with this set for equality.
+	 *
+	 * @param o the object to be compared for equality with this set.
+	 * @return <code>true</code> if the specified object is equal to this set.
+	 */
+	public boolean equals(Object o) {
+		if(this == o)
+			return true;
+		if(!(o instanceof FastDoubleSet))
+			return false;
+		final FastDoubleSet that = (FastDoubleSet) o;
+		if(size() != that.size())
+			return false;
+		return containsAll(that);
+	}
+	/**
+	 * Returns the hash code value for this set.
+	 *
+	 * @return the hash code value for this set.
+	 */
+	public int hashCode() {
+		if(_size == 0)
+			return 0;
+		int h = 0;
+		final int length = _table.length;
+		for(int i = -1; ++i < length;) {
+			if(_state[i] == OCCUPIED) {
+				final long bits = Double.doubleToLongBits(_table[i]);
+				h += (int) (bits ^ bits >>> 32);
+			}
+		}
+		return h;
+	}
+	/**
+	 * Returns a string representation of this set.
+	 *
+	 * @return a string representation of this set.
+	 */
+	public String toString() {
+		if(_size == 0)
+			return "[]";
+		final StringBuffer/*StringBuilder*/ sb = new StringBuffer/*StringBuilder*/();
+		sb.append('[');
+		boolean first = true;
+		final int length = _table.length;
+		for(int i = -1; ++i < length;) {
+			if(_state[i] == OCCUPIED) {
+				if(!first) {
+					sb.append(',').append(' ');
+				}
+				sb.append(_table[i]);
+				first = false;
+			}
+		}
+		return sb.append(']').toString();
+	}
+	private static final class SetIterator implements FastDoubleIterator {
+		private final FastDoubleSet _set;
+		private int _cursor = 0;
+		private double _lastValue;
+		private boolean _canRemove;
+		private SetIterator(FastDoubleSet set) {
+			_set = set;
+			if(set._size == 0) {
+				_cursor = set._table.length;
+				return;
+			}
+			advance();
+		}
+		private final void advance() {
+			for(final int length = _set._table.length; _cursor < length
+					&& _set._state[_cursor] != OCCUPIED;) {
+				++_cursor;
+			}
+		}
+		public boolean hasNext() {
+			return _cursor < _set._table.length;
+		}
+		public double next() {
+			if(!hasNext())
+				throw new NoSuchElementException();
+			final double val = _set._table[_cursor++];
+			_lastValue = val;
+			_canRemove = true;
+			advance();
+			return val;
+		}
+		public void remove() {
+			if(!_canRemove)
+				throw new IllegalStateException();
+			_set.remove(_lastValue);
+			_canRemove = false;
+		}
+	}
+	private static final class Unmodifiable extends FastDoubleSet
+			implements Cloneable, Reusable, Serializable {
+		private final FastDoubleSet _set;
+		private Unmodifiable(FastDoubleSet set) {
+			super(0);
+			_set = set;
+		}
+		public final FastPrimitiveCollection/*FastDoubleSet*/ unmodifiable() {
+			return this;
+		}
+		public final FastPrimitiveCollection/*FastDoubleSet*/ shared() {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final int size() {
+			return _set.size();
+		}
+		public final boolean isEmpty() {
+			return _set.isEmpty();
+		}
+		public final void trimToSize() {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final void ensureCapacity(int min) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean contains(double value) {
+			return _set.contains(value);
+		}
+		public final Object/*FastDoubleSet*/ clone()
+				throws CloneNotSupportedException {
+			return _set.clone();
+		}
+		public final double[] toArray() {
+			return _set.toArray();
+		}
+		public final boolean add(double value) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean remove(double value) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean removeElement(double value) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final void clear() {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean addAll(double[] values) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean addAll(FastDoubleSet values) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean containsAll(double[] values) {
+			return _set.containsAll(values);
+		}
+		public final boolean containsAll(FastDoubleSet values) {
+			return _set.containsAll(values);
+		}
+		public final boolean removeAll(double[] values) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean removeAll(FastDoubleSet values) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean retainAll(FastDoubleSet values) {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final boolean equals(Object o) {
+			return _set.equals(o);
+		}
+		public final int hashCode() {
+			return _set.hashCode();
+		}
+		public final String toString() {
+			return _set.toString();
+		}
+		public final void reset() {
+			throw new UnsupportedOperationException("Unmodifiable");
+		}
+		public final FastPrimitiveIterator/*FastDoubleIterator*/ iterator() {
+			final FastDoubleIterator iterator = (FastDoubleIterator) _set
+					.iterator();
+			return new FastDoubleIterator() {
+				public final boolean hasNext() {
+					return iterator.hasNext();
+				}
+				public final double next() {
+					return iterator.next();
+				}
+				public final void remove() {
+					throw new UnsupportedOperationException("Unmodifiable");
+				}
+			};
+		}
+	}
+	private static final class Shared extends FastDoubleSet
+			implements Cloneable, Reusable, Serializable {
+		private final FastDoubleSet _set;
+		private final ReadWriteLock _lock;
+		private Shared(FastDoubleSet set) {
+			super(0);
+			_set = set;
+			_lock = new ReentrantWriterPreferenceReadWriteLock();
+		}
+		public final FastPrimitiveCollection/*FastDoubleSet*/ unmodifiable() {
+			return _set.unmodifiable();
+		}
+		public final FastPrimitiveCollection/*FastDoubleSet*/ shared() {
+			return this;
+		}
+		public final int size() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.size();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean isEmpty() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.isEmpty();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final void trimToSize() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							_set.trimToSize();
+							return;
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final void ensureCapacity(int min) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							_set.ensureCapacity(min);
+							return;
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean contains(double value) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.contains(value);
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final Object/*FastDoubleSet*/ clone()
+				throws CloneNotSupportedException {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.clone();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final double[] toArray() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.toArray();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean add(double value) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.add(value);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean remove(double value) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.remove(value);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean removeElement(double value) {
+			return remove(value);
+		}
+		public final void clear() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							_set.clear();
+							return;
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean addAll(double[] values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.addAll(values);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean addAll(FastDoubleSet values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.addAll(values);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean containsAll(double[] values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.containsAll(values);
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean containsAll(FastDoubleSet values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.containsAll(values);
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean removeAll(double[] values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.removeAll(values);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean removeAll(FastDoubleSet values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.removeAll(values);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean retainAll(FastDoubleSet values) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							return _set.retainAll(values);
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final boolean equals(Object o) {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.equals(o);
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final int hashCode() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.hashCode();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final String toString() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync r = _lock.readLock();
+				for(;;) {
+					try {
+						r.acquire();
+						try {
+							return _set.toString();
+						}
+						finally {
+							r.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final void reset() {
+			boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+			try {
+				final Sync w = _lock.writeLock();
+				for(;;) {
+					try {
+						w.acquire();
+						try {
+							_set.reset();
+							return;
+						}
+						finally {
+							w.release();
+						}
+					}
+					catch(final InterruptedException ex) {
+						wasInterrupted = true;
+					}
+				}
+			}
+			finally {
+				if(wasInterrupted) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+		public final FastPrimitiveIterator/*FastDoubleIterator*/ iterator() {
+			final FastDoubleIterator iterator = (FastDoubleIterator) _set
+					.iterator();
+			return new FastDoubleIterator() {
+				public final boolean hasNext() {
+					boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+					try {
+						final Sync r = _lock.readLock();
+						for(;;) {
+							try {
+								r.acquire();
+								try {
+									return iterator.hasNext();
+								}
+								finally {
+									r.release();
+								}
+							}
+							catch(final InterruptedException ex) {
+								wasInterrupted = true;
+							}
+						}
+					}
+					finally {
+						if(wasInterrupted) {
+							Thread.currentThread().interrupt();
+						}
+					}
+				}
+				public final double next() {
+					boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+					try {
+						final Sync r = _lock.readLock();
+						for(;;) {
+							try {
+								r.acquire();
+								try {
+									return iterator.next();
+								}
+								finally {
+									r.release();
+								}
+							}
+							catch(final InterruptedException ex) {
+								wasInterrupted = true;
+							}
+						}
+					}
+					finally {
+						if(wasInterrupted) {
+							Thread.currentThread().interrupt();
+						}
+					}
+				}
+				public final void remove() {
+					boolean wasInterrupted = /*@JVM-1.1+@ true ? Thread.interrupted() : /**/false;
+					try {
+						final Sync w = _lock.writeLock();
+						for(;;) {
+							try {
+								w.acquire();
+								try {
+									iterator.remove();
+									return;
+								}
+								finally {
+									w.release();
+								}
+							}
+							catch(final InterruptedException ex) {
+								wasInterrupted = true;
+							}
+						}
+					}
+					finally {
+						if(wasInterrupted) {
+							Thread.currentThread().interrupt();
+						}
+					}
+				}
+			};
+		}
+	}
+}

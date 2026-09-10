@@ -1,0 +1,25 @@
+name: Build Javolution Extended (J2SE 1.6+)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install JDK 6
+      run: |
+        chmod +x lib/jdk-6u45-linux-x64.bin
+        ./lib/jdk-6u45-linux-x64.bin
+
+    - name: Build Javolution Extended
+      run: ant -Djavac.executable=$(pwd)/jdk1.6.0_45/bin/javac -Djavadoc.executable=$(pwd)/jdk1.6.0_45/bin/javadoc 1.6
+
+    - uses: actions/upload-artifact@v5
+      with:
+        name: Javolution Extended v7.0.0 (J2SE 1.6+)
+        path: target/javolution-extended-7.0.0.jar
+        compression-level: 9
